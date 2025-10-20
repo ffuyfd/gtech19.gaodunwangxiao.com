@@ -5,6 +5,7 @@ import com.example.gtech19.mapper.UserMapper;
 import com.example.gtech19.model.User;
 import com.example.gtech19.service.UserService;
 import com.example.gtech19.service.impl.dto.request.LoginRequest;
+import com.example.gtech19.service.impl.dto.response.UserResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -53,8 +54,16 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User getUserById(Long id) {
-        return userMapper.selectById(id);
+    public UserResponse getByUserId(String userId) {
+        User user = userMapper.selectByUserId(userId);
+        if (user == null) {
+            return null;
+        }
+        UserResponse response = new UserResponse();
+        response.setUserId(user.getUserid());
+        response.setUserName(user.getUsername());
+        response.setNickName(user.getNickname());
+        return response;
     }
 
     @Override

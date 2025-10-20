@@ -2,6 +2,7 @@ package com.example.gtech19.service;
 
 import com.example.gtech19.model.User;
 import com.example.gtech19.service.impl.dto.request.LoginRequest;
+import com.example.gtech19.service.impl.dto.response.UserResponse;
 
 import java.util.List;
 
@@ -19,9 +20,12 @@ public interface UserService {
     String insertOrUpdate(LoginRequest request);
 
     /**
-     * 根据ID查询用户
+     * 根据用户ID查询用户
+     *
+     * @param userId
+     * @return
      */
-    User getUserById(Long id);
+    UserResponse getByUserId(String userId);
 
     /**
      * 查询所有用户

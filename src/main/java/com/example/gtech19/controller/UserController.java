@@ -4,6 +4,7 @@ import com.example.gtech19.common.Result;
 import com.example.gtech19.model.User;
 import com.example.gtech19.service.UserService;
 import com.example.gtech19.service.impl.dto.request.LoginRequest;
+import com.example.gtech19.service.impl.dto.response.UserResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,9 +37,9 @@ public class UserController {
     /**
      * 根据ID查询用户
      */
-    @GetMapping("/{id}")
-    public Result<User> getUserById(@PathVariable Long id) {
-        User user = userService.getUserById(id);
+    @GetMapping("/detail/{userId}")
+    public Result<UserResponse> detail(@PathVariable String userId) {
+        UserResponse user = userService.getByUserId(userId);
         if (user != null) {
             return Result.success(user);
         } else {

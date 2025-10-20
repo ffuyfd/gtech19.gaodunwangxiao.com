@@ -19,11 +19,11 @@
     </sql>
     
     <!-- 根据ID查询用户 -->
-    <select id="selectById" resultMap="BaseResultMap">
+    <select id="selectByUserId" resultMap="BaseResultMap">
         SELECT
         <include refid="Base_Column_List"/>
         FROM user
-        WHERE id = #{id}
+        WHERE userid = #{userid}
     </select>
     
     <!-- 查询所有用户 -->
