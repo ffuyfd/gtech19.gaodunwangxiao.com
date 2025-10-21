@@ -7,6 +7,12 @@ spring:
     username: root
     password: mSzdb8PA2Q0uU416J79HoxchD5XB3ZKE
 
+# 火山引擎大模型API配置
+volcano:
+  api:
+    token: bd747896-e89b-46f4-a5ab-0a232d086845  # Bearer Token
+    url: https://ark.cn-beijing.volces.com/api/v3/chat/completions  # 文本生成API地址
+
 mybatis:
   mapper-locations: classpath:mapper/*.xml
   type-aliases-package: com.example.gtech19.model

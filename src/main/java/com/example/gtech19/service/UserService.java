@@ -2,6 +2,7 @@ package com.example.gtech19.service;
 
 import com.example.gtech19.model.User;
 import com.example.gtech19.service.impl.dto.request.LoginRequest;
+import com.example.gtech19.service.impl.dto.request.UserUpdateRequest;
 import com.example.gtech19.service.impl.dto.response.UserResponse;
 
 import java.util.List;
@@ -18,6 +19,13 @@ public interface UserService {
      * @return
      */
     String insertOrUpdate(LoginRequest request);
+
+    /**
+     * 更新用户信息
+     * @param request
+     * @return
+     */
+    UserResponse update(UserUpdateRequest request);
 
     /**
      * 根据用户ID查询用户

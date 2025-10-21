@@ -38,6 +38,20 @@ public class User implements Serializable {
      */
     private String nickname;
 
+     /**
+     * 年级
+     */
+    private String grade;
+
+    /**
+     * 专业
+     */
+    private String major;
+
+    /**
+     * 目标
+     */
+    private String target;
     
     /**
      * 创建时间

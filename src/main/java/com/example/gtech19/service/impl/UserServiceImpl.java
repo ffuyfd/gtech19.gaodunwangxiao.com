@@ -5,6 +5,7 @@ import com.example.gtech19.mapper.UserMapper;
 import com.example.gtech19.model.User;
 import com.example.gtech19.service.UserService;
 import com.example.gtech19.service.impl.dto.request.LoginRequest;
+import com.example.gtech19.service.impl.dto.request.UserUpdateRequest;
 import com.example.gtech19.service.impl.dto.response.UserResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -33,6 +34,9 @@ public class UserServiceImpl implements UserService {
             user.setUsername(request.getUserName());
             user.setNickname(request.getNickName());
             user.setPassword("");
+            user.setGrade("");
+            user.setMajor("");
+            user.setTarget("");
             user.setCreateTime(new Date());
             user.setUpdateTime(new Date());
             // 新增用户
@@ -49,6 +53,20 @@ public class UserServiceImpl implements UserService {
         return user.getUserid();
     }
 
+    @Override
+    public UserResponse update(UserUpdateRequest request) {
+        User user = userMapper.selectByUserId(request.getUserId());
+        if (user == null) {
+            return null;
+        }
+        user.setGrade(request.getGrade());
+        user.setMajor(request.getMajor());
+        user.setTarget(request.getTarget());
+        user.setUpdateTime(new Date());
+        userMapper.update(user);
+        return getByUserId(request.getUserId());
+    }
+
     private String createUserId() {
         return UUID.randomUUID().toString().replaceAll("-", "");
     }
@@ -63,6 +81,9 @@ public class UserServiceImpl implements UserService {
         response.setUserId(user.getUserid());
         response.setUserName(user.getUsername());
         response.setNickName(user.getNickname());
+        response.setGrade(user.getGrade());
+        response.setMajor(user.getMajor());
+        response.setTarget(user.getTarget());
         return response;
     }
 

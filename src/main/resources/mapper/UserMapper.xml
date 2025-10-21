@@ -9,13 +9,16 @@
         <result column="username" property="username"/>
         <result column="password" property="password"/>
         <result column="nickname" property="nickname"/>
+        <result column="grade" property="grade"/>
+        <result column="major" property="major"/>
+        <result column="target" property="target"/>
         <result column="create_time" property="createTime"/>
         <result column="update_time" property="updateTime"/>
     </resultMap>
     
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, userid, username, password, nickname, create_time, update_time
+        id, userid, username, password, nickname, grade, major, target, create_time, update_time
     </sql>
     
     <!-- 根据ID查询用户 -->
@@ -36,9 +39,9 @@
     <!-- 新增用户 -->
     <insert id="insert" parameterType="com.example.gtech19.model.User">
         INSERT INTO user (
-            userid, username, password, nickname, create_time, update_time
+            userid, username, password, nickname, grade, major, target, create_time, update_time
         ) VALUES (
-            #{userid}, #{username}, #{password}, #{nickname}, NOW(), NOW()
+            #{userid}, #{username}, #{password}, #{nickname}, #{grade}, #{major}, #{target}, NOW(), NOW()
         )
         <selectKey resultType="java.lang.Long" keyProperty="id" order="AFTER">
             SELECT LAST_INSERT_ID()
@@ -53,6 +56,9 @@
             <if test="username != null">username = #{username},</if>
             <if test="password != null">password = #{password},</if>
             <if test="nickname != null">nickname = #{nickname},</if>
+            <if test="grade != null">grade = #{grade},</if>
+            <if test="major != null">major = #{major},</if>
+            <if test="target != null">target = #{target},</if>
             update_time = NOW()
         </set>
         WHERE id = #{id}

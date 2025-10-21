@@ -7,4 +7,7 @@ public class UserResponse {
     private String userId;
     private String userName;
     private String nickName;
+    private String grade;
+    private String major;
+    private String target;
 }

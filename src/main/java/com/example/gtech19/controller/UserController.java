@@ -4,6 +4,7 @@ import com.example.gtech19.common.Result;
 import com.example.gtech19.model.User;
 import com.example.gtech19.service.UserService;
 import com.example.gtech19.service.impl.dto.request.LoginRequest;
+import com.example.gtech19.service.impl.dto.request.UserUpdateRequest;
 import com.example.gtech19.service.impl.dto.response.UserResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -29,6 +30,22 @@ public class UserController {
         String userId = userService.insertOrUpdate(request);
         if (userId != null) {
             return Result.success(userId);
+        } else {
+            return Result.error(404, "用户不存在");
+        }
+    }
+
+    /**
+     * 更新用户信息
+     */
+    @PostMapping("/update")
+    public Result<UserResponse> update(@RequestBody UserUpdateRequest request) {
+        if (request == null || request.getUserId() == null) {
+            return Result.error(500, "用户ID不能为空");
+        }
+        UserResponse response = userService.update(request);
+        if (response != null) {
+            return Result.success(response);
         } else {
             return Result.error(404, "用户不存在");
         }
