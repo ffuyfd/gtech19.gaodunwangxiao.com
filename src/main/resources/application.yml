@@ -6,6 +6,9 @@ spring:
     url: jdbc:mysql://sha1.clusters.zeabur.com:32660/gdspace?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
     username: root
     password: mSzdb8PA2Q0uU416J79HoxchD5XB3ZKE
+  mvc:
+    pathmatch:
+      matching-strategy: ANT_PATH_MATCHER
 
 # 火山引擎大模型API配置
 volcano:
@@ -21,3 +24,7 @@ mybatis:
 
 server:
   port: 8080
+
+# 启用Swagger文档
+swagger:
+  enabled: true
