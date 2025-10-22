@@ -38,6 +38,11 @@ public class User implements Serializable {
      */
     private String nickname;
 
+    /**
+     * 学校
+     */
+    private String school;
+
      /**
      * 年级
      */

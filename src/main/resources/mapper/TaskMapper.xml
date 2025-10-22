@@ -1,0 +1,166 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.gtech19.mapper.TaskMapper">
+    
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.example.gtech19.model.Task">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="task_code" property="taskCode"/>
+        <result column="task_name" property="taskName"/>
+        <result column="task_desc" property="taskDesc"/>
+        <result column="task_type" property="taskType"/>
+        <result column="task_date" property="taskDate"/>
+        <result column="image_url" property="imageUrl"/>
+        <result column="task_points" property="taskPoints"/>
+        <result column="task_source" property="taskSource"/>
+        <result column="task_status" property="taskStatus"/>
+        <result column="finish_time" property="finishTime"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="is_deleted" property="isDeleted"/>
+    </resultMap>
+    
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, user_id, task_code, task_name, task_desc, task_type, task_date, image_url, task_points,
+        task_source, task_status, finish_time, create_time, update_time, is_deleted
+    </sql>
+    
+    <!-- 根据ID查询任务 -->
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM task
+        WHERE id = #{id}
+    </select>
+    
+    <!-- 根据任务编码查询任务 -->
+    <select id="selectByTaskCode" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM task
+        WHERE task_code = #{taskCode}
+    </select>
+    
+    <!-- 查询所有任务 -->
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM task
+    </select>
+
+    <!-- 根据用户ID查询任务 -->
+    <select id="selectByUserId" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM task
+        WHERE user_id = #{userId} and is_deleted = 0
+    </select>
+    
+    <!-- 根据任务日期查询任务 -->
+    <select id="selectByTaskDate" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM task
+        WHERE task_date = #{taskDate}
+    </select>
+    
+    <!-- 根据任务类型查询任务 -->
+    <select id="selectByTaskType" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM task
+        WHERE task_type = #{taskType}
+    </select>
+    
+    <!-- 根据任务状态查询任务 -->
+    <select id="selectByTaskStatus" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM task
+        WHERE task_status = #{taskStatus}
+    </select>
+    
+    <!-- 根据任务来源查询任务 -->
+    <select id="selectByTaskSource" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM task
+        WHERE task_source = #{taskSource}
+    </select>
+    
+    <!-- 新增任务 -->
+    <insert id="insert" parameterType="com.example.gtech19.model.Task">
+        INSERT INTO task (
+            user_id, task_code, task_name, task_desc, task_type, task_date, image_url, task_points,
+            task_source, task_status, finish_time, create_time, update_time, is_deleted
+        ) VALUES (
+            #{userId}, #{taskCode}, #{taskName}, #{taskDesc}, #{taskType}, #{taskDate}, #{imageUrl}, #{taskPoints},
+            #{taskSource}, #{taskStatus}, #{finishTime}, NOW(), NOW(), #{isDeleted}
+        )
+        <selectKey resultType="java.lang.Long" keyProperty="id" order="AFTER">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+    </insert>
+    
+    <!-- 更新任务 -->
+    <update id="update" parameterType="com.example.gtech19.model.Task">
+        UPDATE task
+        <set>
+            <if test="taskCode != null">task_code = #{taskCode},</if>
+            <if test="taskName != null">task_name = #{taskName},</if>
+            <if test="taskDesc != null">task_desc = #{taskDesc},</if>
+            <if test="taskType != null">task_type = #{taskType},</if>
+            <if test="taskDate != null">task_date = #{taskDate},</if>
+            <if test="imageUrl != null">image_url = #{imageUrl},</if>
+            <if test="taskPoints != null">task_points = #{taskPoints},</if>
+            <if test="taskSource != null">task_source = #{taskSource},</if>
+            <if test="taskStatus != null">task_status = #{taskStatus},</if>
+            <if test="finishTime != null">finish_time = #{finishTime},</if>
+            <if test="isDeleted != null">is_deleted = #{isDeleted},</if>
+            update_time = NOW()
+        </set>
+        WHERE id = #{id}
+    </update>
+    
+    <!-- 根据ID删除任务 -->
+    <delete id="deleteById">
+        UPDATE task SET is_deleted = 1 WHERE id = #{id}
+    </delete>
+    
+    <!-- 根据任务编码删除任务 -->
+    <delete id="deleteByTaskCode">
+        DELETE FROM task WHERE task_code = #{taskCode}
+    </delete>
+    
+    <!-- 分页查询任务列表 -->
+    <select id="selectByPage" parameterType="com.example.gtech19.service.impl.dto.request.TaskListRequest" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM task
+        WHERE is_deleted = 0
+        
+        <!-- 用户ID条件 -->
+        <if test="userId != null and userId != ''">
+            AND user_id = #{userId}
+        </if>
+        
+        <!-- 任务状态条件 -->
+        <if test="taskStatus != null">
+            AND task_status = #{taskStatus}
+        </if>
+        
+        <!-- 任务类型条件 -->
+        <if test="taskType != null">
+            AND task_type = #{taskType}
+        </if>
+        
+        <!-- 任务来源条件 -->
+        <if test="taskSource != null">
+            AND task_source = #{taskSource}
+        </if>
+        
+        <!-- 排序 -->
+        ORDER BY create_time DESC
+    </select>
+</mapper>

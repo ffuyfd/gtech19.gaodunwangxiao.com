@@ -4,6 +4,7 @@ import lombok.Data;
 
 @Data
 public class UserUpdateRequest {
+    private String school;
     private String grade;
     private String major;
     private String target;

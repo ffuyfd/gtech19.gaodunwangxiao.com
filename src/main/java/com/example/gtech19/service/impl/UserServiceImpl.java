@@ -33,6 +33,7 @@ public class UserServiceImpl implements UserService {
             user.setUserid(userId);
             user.setUsername(request.getUserName());
             user.setNickname(request.getNickName());
+            user.setSchool("");
             user.setPassword("");
             user.setGrade("");
             user.setMajor("");
@@ -62,6 +63,7 @@ public class UserServiceImpl implements UserService {
         user.setGrade(request.getGrade());
         user.setMajor(request.getMajor());
         user.setTarget(request.getTarget());
+        user.setSchool(request.getSchool());
         user.setUpdateTime(new Date());
         userMapper.update(user);
         return getByUserId(request.getUserId());
