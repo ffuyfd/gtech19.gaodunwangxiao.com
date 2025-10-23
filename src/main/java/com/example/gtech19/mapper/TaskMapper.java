@@ -57,7 +57,7 @@ public interface TaskMapper {
     /**
      * 分页查询任务列表
      */
-    List<Task> selectByPage(TaskListRequest request);
+    List<Task> selectByPage(@Param("request") TaskListRequest request);
     
     /**
      * 新增任务

@@ -141,18 +141,18 @@
         WHERE is_deleted = 0
         
         <!-- 用户ID条件 -->
-        <if test="userId != null and userId != ''">
-            AND user_id = #{userId}
+        <if test="request.userId != null and request.userId != ''">
+            AND user_id = #{request.userId}
         </if>
         
         <!-- 任务状态条件 -->
-        <if test="startDay != null and startDay != ''">
-            AND task_date >= #{startDay}
+        <if test="request.startDay != null and request.startDay != ''">
+            AND task_date >= #{request.startDay}
         </if>
 
         <!-- 结束日期条件 -->
-        <if test="endDay != null and endDay != ''">
-            AND task_date &lt;= #{endDay}
+        <if test="request.endDay != null and request.endDay != ''">
+            AND task_date &lt;= #{request.endDay}
         </if>
         
         <!-- 排序 -->
