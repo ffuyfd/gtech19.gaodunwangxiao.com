@@ -1,11 +1,9 @@
 package com.example.gtech19.controller;
 
 import com.example.gtech19.common.Result;
-import com.example.gtech19.model.Task;
 import com.example.gtech19.service.TaskService;
 import com.example.gtech19.service.helper.UserHelper;
 import com.example.gtech19.service.impl.dto.request.TaskListRequest;
-import com.example.gtech19.service.impl.dto.request.TaskUpdateRequest;
 import com.example.gtech19.service.impl.dto.request.TaskUserCompleteRequest;
 import com.example.gtech19.service.impl.dto.request.TaskUserCreateRequest;
 import com.example.gtech19.service.impl.dto.response.TaskResponse;
@@ -13,10 +11,8 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -88,24 +84,6 @@ public class TaskController {
         }
     }
 
-    /**
-     * 更新任务信息
-     */
-    @PostMapping("/update")
-    @ApiOperation(value = "更新任务信息", notes = "更新已存在的任务信息")
-    public Result<TaskResponse> updateTask(
-            @ApiParam(name = "request", value = "更新任务请求参数", required = true)
-            @RequestBody TaskUpdateRequest request) {
-        if (request == null || request.getId() == null) {
-            return Result.error(500, "任务ID不能为空");
-        }
-        TaskResponse response = taskService.updateTask(request);
-        if (response != null) {
-            return Result.success(response);
-        } else {
-            return Result.error(404, "任务不存在");
-        }
-    }
 
     /**
      * 根据ID查询任务详情
@@ -123,31 +101,20 @@ public class TaskController {
         }
     }
 
-
     /**
-     * 根据任务日期查询任务
+     * 完成任务
      */
-    @GetMapping("/list/date/{taskDate}")
-    @ApiOperation(value = "按日期查询任务", notes = "根据任务日期查询任务信息")
-    public Result<List<Task>> getTasksByTaskDate(
-            @ApiParam(name = "taskDate", value = "任务日期", required = true, example = "2023-12-25")
-            @PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd") Date taskDate) {
-        List<Task> tasks = taskService.getTasksByTaskDate(taskDate);
-        return Result.success(tasks);
-    }
-
-
-    /**
-     * 删除任务
-     */
-    @DeleteMapping("/delete/{id}")
-    @ApiOperation(value = "删除任务", notes = "根据任务ID删除任务")
-    public Result<Boolean> deleteTaskById(
-            @ApiParam(name = "id", value = "任务ID", required = true, example = "1")
-            @PathVariable Long id) {
-        boolean result = taskService.deleteTaskById(id);
-        if (result) {
-            return Result.success(true);
+    @PostMapping("/reset-init")
+    @ApiOperation(value = "重置初始化任务", notes = "重置初始化任务")
+    public Result<Boolean> resetInitTask(
+            @ApiParam(name = "request", value = "更新任务状态请求参数", required = true)
+            @RequestBody TaskUserCompleteRequest request) {
+        if (!userHelper.checkUserLogin(request.getUserId())) {
+            return Result.error(500, "请先登录");
+        }
+        Boolean response = taskService.resetInitTask(request.getUserId());
+        if (response != null) {
+            return Result.success(response);
         } else {
             return Result.error(404, "任务不存在");
         }

@@ -8,13 +8,13 @@ import com.example.gtech19.config.enums.TaskLibraryConfigEnum;
 import com.example.gtech19.config.enums.TaskSourceEnum;
 import com.example.gtech19.config.enums.TaskStatusEnum;
 import com.example.gtech19.config.enums.TaskTypeEnum;
+import com.example.gtech19.mapper.TaskMapper;
 import com.example.gtech19.mapper.UserMapper;
 import com.example.gtech19.model.ChatLog;
 import com.example.gtech19.model.Task;
 import com.example.gtech19.model.User;
 import com.example.gtech19.service.ChatLogService;
 import com.example.gtech19.service.ChatService;
-import com.example.gtech19.service.TaskService;
 import com.example.gtech19.service.impl.dto.response.TaskInitResponse;
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +30,7 @@ import java.util.Map;
 public class TaskHelper {
 
     @Autowired
-    private TaskService taskService;
+    private TaskMapper taskMapper;
 
     @Autowired
     private ChatService chatService;
@@ -65,7 +65,7 @@ public class TaskHelper {
      * @param userId
      */
     public void firstInitTask(String userId) {
-        List<Task> tasks = taskService.getTasksByUserId(userId);
+        List<Task> tasks = taskMapper.selectByUserId(userId);
         //已有任务不生成
         if (CollectionUtil.isNotEmpty(tasks)) {
             return;
@@ -158,7 +158,7 @@ public class TaskHelper {
             task.setImageUrl("");
             task.setCreateTime(new Date());
             task.setUpdateTime(new Date());
-            taskService.insertTask(task);
+            taskMapper.insert(task);
         });
     }
 

@@ -9,6 +9,7 @@ import com.example.gtech19.config.enums.TaskTypeEnum;
 import com.example.gtech19.mapper.TaskMapper;
 import com.example.gtech19.model.Task;
 import com.example.gtech19.service.TaskService;
+import com.example.gtech19.service.helper.TaskHelper;
 import com.example.gtech19.service.impl.dto.request.TaskListRequest;
 import com.example.gtech19.service.impl.dto.request.TaskUpdateRequest;
 import com.example.gtech19.service.impl.dto.request.TaskUserCompleteRequest;
@@ -20,7 +21,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -31,6 +31,9 @@ public class TaskServiceImpl implements TaskService {
 
     @Autowired
     private TaskMapper taskMapper;
+
+    @Autowired
+    private TaskHelper taskHelper;
 
     @Override
     public Long userCreateTask(TaskUserCreateRequest request) {
@@ -85,19 +88,6 @@ public class TaskServiceImpl implements TaskService {
         return convertToResponse(task);
     }
 
-    /**
-     * 根据用户ID查询任务
-     */
-    @Override
-    public List<Task> getTasksByUserId(String userId) {
-        return taskMapper.selectByUserId(userId);
-    }
-
-    @Override
-    public List<Task> getTasksByTaskDate(Date taskDate) {
-        return taskMapper.selectByTaskDate(taskDate);
-    }
-
     @Override
     public List<TaskResponse> getTasksByUserId(TaskListRequest request) {
         // 执行查询
@@ -107,15 +97,6 @@ public class TaskServiceImpl implements TaskService {
         return tasks.stream()
                 .map(this::convertToResponse)
                 .collect(Collectors.toList());
-    }
-
-    @Override
-    public boolean deleteTaskById(Long id) {
-        Task task = taskMapper.selectById(id);
-        if (task == null) {
-            return false;
-        }
-        return taskMapper.deleteById(id) > 0;
     }
 
     @Override
@@ -131,12 +112,6 @@ public class TaskServiceImpl implements TaskService {
         return getTaskById(request.getTaskId());
     }
 
-    /**
-     * 生成任务编码
-     */
-    private String generateTaskCode() {
-        return "TASK_" + UUID.randomUUID().toString().replaceAll("-", "").substring(0, 16);
-    }
 
     /**
      * 转换Task对象为TaskResponse对象
@@ -150,7 +125,7 @@ public class TaskServiceImpl implements TaskService {
         response.setTaskDate(DateUtil.formatDate(task.getTaskDate()));
         if (StrUtil.isNotBlank(task.getTaskCode())) {
             TaskLibraryConfigEnum taskLibraryConfigEnum = TaskLibraryConfigEnum.getByTaskId(Integer.parseInt(task.getTaskCode()));
-            if (taskLibraryConfigEnum != null  ) {
+            if (taskLibraryConfigEnum != null) {
                 if ("AI".equals(taskLibraryConfigEnum.getTaskType())) {
                     response.setImageUrl(taskLibraryConfigEnum.getJumpUrl());
                 }
@@ -161,7 +136,12 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public int insertTask(Task task) {
-        return taskMapper.insert(task);
+    public Boolean resetInitTask(String userId) {
+        // 删除用户的初始化任务
+        int deleted = taskMapper.deleteUserTask(userId);
+        taskHelper.firstInitTask(userId);
+
+        return deleted > 0;
     }
+
 }

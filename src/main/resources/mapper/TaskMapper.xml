@@ -122,17 +122,7 @@
         </set>
         WHERE id = #{id}
     </update>
-    
-    <!-- 根据ID删除任务 -->
-    <delete id="deleteById">
-        UPDATE task SET is_deleted = 1 WHERE id = #{id}
-    </delete>
-    
-    <!-- 根据任务编码删除任务 -->
-    <delete id="deleteByTaskCode">
-        DELETE FROM task WHERE task_code = #{taskCode}
-    </delete>
-    
+
     <!-- 分页查询任务列表 -->
     <select id="selectByPage" parameterType="com.example.gtech19.service.impl.dto.request.TaskListRequest" resultMap="BaseResultMap">
         SELECT
@@ -158,4 +148,14 @@
         <!-- 排序 -->
         ORDER BY task_date asc, id asc
     </select>
+
+    <!-- 更新任务 -->
+    <update id="deleteUserTask" parameterType="java.lang.String">
+        UPDATE task
+        <set>
+            is_deleted = 1
+            update_time = NOW()
+        </set>
+        WHERE user_id = #{userId} and is_deleted=0
+    </update>
 </mapper>

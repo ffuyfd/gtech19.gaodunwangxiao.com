@@ -68,14 +68,9 @@ public interface TaskMapper {
      * 更新任务
      */
     int update(Task task);
-    
-    /**
-     * 根据ID删除任务
+
+     /**
+     * 根据用户ID删除任务
      */
-    int deleteById(Long id);
-    
-    /**
-     * 根据任务编码删除任务
-     */
-    int deleteByTaskCode(@Param("taskCode") String taskCode);
+    int deleteUserTask(@Param("userId") String userId);
 }
