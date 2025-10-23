@@ -3,8 +3,9 @@ package com.example.gtech19.service;
 import com.example.gtech19.common.PageResponse;
 import com.example.gtech19.model.Task;
 import com.example.gtech19.service.impl.dto.request.TaskListRequest;
-import com.example.gtech19.service.impl.dto.request.TaskUserCreateRequest;
 import com.example.gtech19.service.impl.dto.request.TaskUpdateRequest;
+import com.example.gtech19.service.impl.dto.request.TaskUserCompleteRequest;
+import com.example.gtech19.service.impl.dto.request.TaskUserCreateRequest;
 import com.example.gtech19.service.impl.dto.response.TaskResponse;
 
 import java.util.Date;
@@ -17,7 +18,7 @@ public interface TaskService {
 
     /**
      * 创建任务
-     * 
+     *
      * @param request 创建任务请求参数
      * @return 任务ID
      */
@@ -25,7 +26,7 @@ public interface TaskService {
 
     /**
      * 更新任务信息
-     * 
+     *
      * @param request 更新任务请求参数
      * @return 任务响应数据
      */
@@ -33,7 +34,7 @@ public interface TaskService {
 
     /**
      * 根据ID查询任务
-     * 
+     *
      * @param id 任务ID
      * @return 任务响应数据
      */
@@ -50,7 +51,7 @@ public interface TaskService {
 
     /**
      * 根据任务日期查询任务
-     * 
+     *
      * @param taskDate 任务日期
      * @return 任务列表
      */
@@ -58,15 +59,15 @@ public interface TaskService {
 
     /**
      * 分页查询任务列表
-     * 
+     *
      * @param request 任务列表请求参数，包含分页和筛选条件
      * @return 分页响应数据
      */
-    PageResponse<Task> getTasksByPage(TaskListRequest request);
+    PageResponse<TaskResponse> getTasksByPage(TaskListRequest request);
 
     /**
      * 删除任务
-     * 
+     *
      * @param id 任务ID
      * @return 删除结果
      */
@@ -74,9 +75,9 @@ public interface TaskService {
 
     /**
      * 完成任务
-     * 
-     * @param id 任务ID
+     *
+     * @param request
      * @return 更新后的任务响应数据
      */
-    TaskResponse completeTask(Long id);
+    TaskResponse completeTask(TaskUserCompleteRequest request);
 }

@@ -1,15 +1,16 @@
 package com.example.gtech19.service.impl;
 
-import cn.hutool.core.util.StrUtil;
 import com.example.gtech19.common.PageResponse;
 import com.example.gtech19.config.enums.TaskSourceEnum;
+import com.example.gtech19.config.enums.TaskStatusEnum;
 import com.example.gtech19.config.enums.TaskTypeEnum;
 import com.example.gtech19.mapper.TaskMapper;
 import com.example.gtech19.model.Task;
 import com.example.gtech19.service.TaskService;
 import com.example.gtech19.service.impl.dto.request.TaskListRequest;
-import com.example.gtech19.service.impl.dto.request.TaskUserCreateRequest;
 import com.example.gtech19.service.impl.dto.request.TaskUpdateRequest;
+import com.example.gtech19.service.impl.dto.request.TaskUserCompleteRequest;
+import com.example.gtech19.service.impl.dto.request.TaskUserCreateRequest;
 import com.example.gtech19.service.impl.dto.response.TaskResponse;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -38,7 +39,7 @@ public class TaskServiceImpl implements TaskService {
         BeanUtils.copyProperties(request, task);
         task.setTaskType(TaskTypeEnum.OTHER.getCode());
         task.setTaskSource(TaskSourceEnum.USER_DEFINED.getCode());
-        
+
         // 设置默认值
         if (task.getTaskPoints() == null) {
             task.setTaskPoints(0);
@@ -82,7 +83,7 @@ public class TaskServiceImpl implements TaskService {
         return convertToResponse(task);
     }
 
-     /**
+    /**
      * 根据用户ID查询任务
      */
     @Override
@@ -96,27 +97,27 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public PageResponse<Task> getTasksByPage(TaskListRequest request) {
-        if (request == null) {
-            return PageResponse.empty(1, 10);
-        }
-        
+    public PageResponse<TaskResponse> getTasksByPage(TaskListRequest request) {
+
         // 设置分页参数
         PageHelper.startPage(request.getPageNum(), request.getPageSize());
-        
+
         // 执行查询
         List<Task> tasks = taskMapper.selectByPage(request);
-        
+
         // 转换为PageInfo
         PageInfo<Task> pageInfo = new PageInfo<>(tasks);
-        
+
         // 转换为TaskResponse列表
         List<TaskResponse> responses = tasks.stream()
                 .map(this::convertToResponse)
                 .collect(Collectors.toList());
-        
+
         // 构建分页响应
-        return PageResponse.build(pageInfo, tasks);
+        PageResponse<TaskResponse> response = PageResponse
+                .composePage(request.getPageNum(), request.getPageSize(), pageInfo.getSize(), pageInfo.getTotal(), responses);
+        response.setTotalPages(pageInfo.getPages());
+        return response;
     }
 
     @Override
@@ -129,17 +130,16 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public TaskResponse completeTask(Long id) {
-        Task task = taskMapper.selectById(id);
+    public TaskResponse completeTask(TaskUserCompleteRequest request) {
+        Task task = taskMapper.selectById(request.getTaskId());
         if (task == null) {
             return null;
         }
-
         task.setTaskStatus(1); // 标记为已完成
         task.setFinishTime(new Date());
         task.setUpdateTime(new Date());
         taskMapper.update(task);
-        return getTaskById(id);
+        return getTaskById(request.getTaskId());
     }
 
     /**
@@ -155,6 +155,9 @@ public class TaskServiceImpl implements TaskService {
     private TaskResponse convertToResponse(Task task) {
         TaskResponse response = new TaskResponse();
         BeanUtils.copyProperties(task, response);
+        response.setTaskSourceName(TaskSourceEnum.getByCode(response.getTaskSource()).getName());
+        response.setTaskTypeName(TaskTypeEnum.getByCode(response.getTaskType()).getName());
+        response.setTaskStatusName(TaskStatusEnum.getByCode(response.getTaskStatus()).getName());
         return response;
     }
 }

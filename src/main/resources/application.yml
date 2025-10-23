@@ -9,6 +9,15 @@ spring:
   mvc:
     pathmatch:
       matching-strategy: ANT_PATH_MATCHER
+  jackson:
+    # 日期格式化（适用于 java.util.Date 类型）
+    date-format: yyyy-MM-dd HH:mm:ss
+    # 时区设置（关键！避免时区偏移，使用东八区）
+    time-zone: GMT+8
+    # 对 Java 8 时间类型（LocalDateTime、LocalDate 等）的格式化
+    deserialization:
+      adjust-dates-to-context-time-zone: false  # 禁用时区自动调整
+    datetime-format: yyyy-MM-dd HH:mm:ss  # Java 8 时间类型的格式
 
 # 火山引擎大模型API配置
 volcano:

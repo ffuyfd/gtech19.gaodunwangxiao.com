@@ -7,6 +7,7 @@ import com.example.gtech19.service.TaskService;
 import com.example.gtech19.service.helper.UserHelper;
 import com.example.gtech19.service.impl.dto.request.TaskListRequest;
 import com.example.gtech19.service.impl.dto.request.TaskUpdateRequest;
+import com.example.gtech19.service.impl.dto.request.TaskUserCompleteRequest;
 import com.example.gtech19.service.impl.dto.request.TaskUserCreateRequest;
 import com.example.gtech19.service.impl.dto.response.TaskResponse;
 import io.swagger.annotations.Api;
@@ -39,11 +40,11 @@ public class TaskController {
      */
     @PostMapping("/list")
     @ApiOperation(value = "分页查询任务列表", notes = "根据条件分页查询用户的任务信息")
-    public Result<PageResponse<Task>> getAllTasks(@RequestBody TaskListRequest request) {
+    public Result<PageResponse<TaskResponse>> getAllTasks(@RequestBody TaskListRequest request) {
         if (request == null || !userHelper.checkUserLogin(request.getUserId())) {
             return Result.error(500, "请先登录");
         }
-        PageResponse<Task> pageResponse = taskService.getTasksByPage(request);
+        PageResponse<TaskResponse> pageResponse = taskService.getTasksByPage(request);
         return Result.success(pageResponse);
     }
 
@@ -55,26 +56,32 @@ public class TaskController {
     public Result<Long> userCreateTask(
             @ApiParam(name = "request", value = "创建任务请求参数", required = true)
             @RequestBody TaskUserCreateRequest request) {
-        if (request == null) {
-            return Result.error(500, "请求参数不能为空");
+        if (request == null || !userHelper.checkUserLogin(request.getUserId())) {
+            return Result.error(500, "请先登录");
         }
         Long taskId = taskService.userCreateTask(request);
         if (taskId != null) {
             return Result.success(taskId);
         } else {
-            return Result.error(500, "创建任务失败，任务编码可能已存在");
+            return Result.error(500, "创建任务失败");
         }
     }
 
     /**
      * 完成任务
      */
-    @PostMapping("/complete/{id}")
+    @PostMapping("/complete")
     @ApiOperation(value = "完成任务", notes = "标记任务为已完成状态")
     public Result<TaskResponse> completeTask(
-            @ApiParam(name = "id", value = "任务ID", required = true, example = "1")
-            @PathVariable Long id) {
-        TaskResponse response = taskService.completeTask(id);
+            @ApiParam(name = "request", value = "更新任务状态请求参数", required = true)
+            @RequestBody TaskUserCompleteRequest request) {
+        if (!userHelper.checkUserLogin(request.getUserId())) {
+            return Result.error(500, "请先登录");
+        }
+        if (request.getTaskId() == null || request.getTaskId() == 0) {
+            return Result.error(500, "参数错误");
+        }
+        TaskResponse response = taskService.completeTask(request);
         if (response != null) {
             return Result.success(response);
         } else {
