@@ -1,6 +1,5 @@
 package com.example.gtech19.controller;
 
-import com.example.gtech19.common.PageResponse;
 import com.example.gtech19.common.Result;
 import com.example.gtech19.model.Task;
 import com.example.gtech19.service.TaskService;
@@ -40,11 +39,11 @@ public class TaskController {
      */
     @PostMapping("/list")
     @ApiOperation(value = "分页查询任务列表", notes = "根据条件分页查询用户的任务信息")
-    public Result<PageResponse<TaskResponse>> getAllTasks(@RequestBody TaskListRequest request) {
+    public Result<List<TaskResponse>> getAllTasks(@RequestBody TaskListRequest request) {
         if (request == null || !userHelper.checkUserLogin(request.getUserId())) {
             return Result.error(500, "请先登录");
         }
-        PageResponse<TaskResponse> pageResponse = taskService.getTasksByPage(request);
+        List<TaskResponse> pageResponse = taskService.getTasksByUserId(request);
         return Result.success(pageResponse);
     }
 

@@ -1,6 +1,5 @@
 package com.example.gtech19.service;
 
-import com.example.gtech19.common.PageResponse;
 import com.example.gtech19.model.Task;
 import com.example.gtech19.service.impl.dto.request.TaskListRequest;
 import com.example.gtech19.service.impl.dto.request.TaskUpdateRequest;
@@ -63,7 +62,7 @@ public interface TaskService {
      * @param request 任务列表请求参数，包含分页和筛选条件
      * @return 分页响应数据
      */
-    PageResponse<TaskResponse> getTasksByPage(TaskListRequest request);
+    List<TaskResponse> getTasksByUserId(TaskListRequest request);
 
     /**
      * 删除任务

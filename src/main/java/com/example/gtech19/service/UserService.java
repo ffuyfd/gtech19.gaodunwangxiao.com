@@ -18,7 +18,7 @@ public interface UserService {
      * @param request
      * @return
      */
-    String insertOrUpdate(LoginRequest request);
+    UserResponse insertOrUpdate(LoginRequest request);
 
     /**
      * 更新用户信息

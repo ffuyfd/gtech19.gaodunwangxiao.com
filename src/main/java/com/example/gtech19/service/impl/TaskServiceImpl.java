@@ -1,5 +1,6 @@
 package com.example.gtech19.service.impl;
 
+import cn.hutool.core.date.DateUtil;
 import com.example.gtech19.common.PageResponse;
 import com.example.gtech19.config.enums.TaskSourceEnum;
 import com.example.gtech19.config.enums.TaskStatusEnum;
@@ -97,27 +98,14 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public PageResponse<TaskResponse> getTasksByPage(TaskListRequest request) {
-
-        // 设置分页参数
-        PageHelper.startPage(request.getPageNum(), request.getPageSize());
-
+    public List<TaskResponse> getTasksByUserId(TaskListRequest request) {
         // 执行查询
         List<Task> tasks = taskMapper.selectByPage(request);
 
-        // 转换为PageInfo
-        PageInfo<Task> pageInfo = new PageInfo<>(tasks);
-
         // 转换为TaskResponse列表
-        List<TaskResponse> responses = tasks.stream()
+        return tasks.stream()
                 .map(this::convertToResponse)
                 .collect(Collectors.toList());
-
-        // 构建分页响应
-        PageResponse<TaskResponse> response = PageResponse
-                .composePage(request.getPageNum(), request.getPageSize(), pageInfo.getSize(), pageInfo.getTotal(), responses);
-        response.setTotalPages(pageInfo.getPages());
-        return response;
     }
 
     @Override
@@ -158,6 +146,7 @@ public class TaskServiceImpl implements TaskService {
         response.setTaskSourceName(TaskSourceEnum.getByCode(response.getTaskSource()).getName());
         response.setTaskTypeName(TaskTypeEnum.getByCode(response.getTaskType()).getName());
         response.setTaskStatusName(TaskStatusEnum.getByCode(response.getTaskStatus()).getName());
+        response.setTaskDate(DateUtil.formatDate(task.getTaskDate()));
         return response;
     }
 }

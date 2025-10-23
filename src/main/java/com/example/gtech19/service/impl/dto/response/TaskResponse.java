@@ -42,7 +42,7 @@ public class TaskResponse {
     /**
      * 任务日期（任务计划执行的日期）
      */
-    private Date taskDate;
+    private String taskDate;
 
     /**
      * 图片URL（根据任务类型展示对应的图片）

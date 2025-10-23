@@ -24,7 +24,7 @@ public class UserServiceImpl implements UserService {
     private UserMapper userMapper;
 
     @Override
-    public String insertOrUpdate(LoginRequest request) {
+    public UserResponse insertOrUpdate(LoginRequest request) {
         User user = userMapper.selectByUsername(request.getUserName());
         if (user == null) {
             user = new User();
@@ -51,7 +51,7 @@ public class UserServiceImpl implements UserService {
             user.setUpdateTime(new Date());
             userMapper.update(user);
         }
-        return user.getUserid();
+        return getByUserId(user.getUserid());
     }
 
     @Override

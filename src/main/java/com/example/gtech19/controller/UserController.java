@@ -31,12 +31,12 @@ public class UserController {
      */
     @PostMapping("/login")
     @ApiOperation(value = "用户登录", notes = "用户登录接口，返回用户ID")
-    public Result<String> login(
+    public Result<UserResponse> login(
             @ApiParam(name = "request", value = "登录请求参数", required = true)
             @RequestBody LoginRequest request) {
-        String userId = userService.insertOrUpdate(request);
-        if (userId != null) {
-            return Result.success(userId);
+        UserResponse userResponse = userService.insertOrUpdate(request);
+        if (userResponse != null) {
+            return Result.success(userResponse);
         } else {
             return Result.error(404, "用户不存在");
         }

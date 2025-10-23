@@ -146,21 +146,16 @@
         </if>
         
         <!-- 任务状态条件 -->
-        <if test="taskStatus != null">
-            AND task_status = #{taskStatus}
+        <if test="startDay != null and startDay != ''">
+            AND task_date >= #{startDay}
         </if>
-        
-        <!-- 任务类型条件 -->
-        <if test="taskType != null">
-            AND task_type = #{taskType}
-        </if>
-        
-        <!-- 任务来源条件 -->
-        <if test="taskSource != null">
-            AND task_source = #{taskSource}
+
+        <!-- 结束日期条件 -->
+        <if test="endDay != null and endDay != ''">
+            AND task_date &lt;= #{endDay}
         </if>
         
         <!-- 排序 -->
-        ORDER BY create_time DESC
+        ORDER BY task_date asc, id asc
     </select>
 </mapper>
