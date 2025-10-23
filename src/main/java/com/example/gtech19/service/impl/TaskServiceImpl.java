@@ -49,6 +49,7 @@ public class TaskServiceImpl implements TaskService {
         task.setTaskDate(new Date());
         task.setCreateTime(new Date());
         task.setUpdateTime(new Date());
+        task.setTaskDate(DateUtil.parse(request.getTaskDate()));
         task.setIsDeleted(0);
         // 新增任务
         taskMapper.insert(task);
