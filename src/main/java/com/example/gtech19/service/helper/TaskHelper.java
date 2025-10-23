@@ -90,6 +90,15 @@ public class TaskHelper {
         }
 
         User user = userMapper.selectByUserId(userId);
+
+        if (user == null) {
+            return;
+        }
+
+        if (StrUtil.isBlank(user.getSchool()) && StrUtil.isBlank(user.getGrade()) && StrUtil.isBlank(user.getMajor()) && StrUtil.isBlank(user.getTarget())) {
+            return;
+        }
+
         // 替换用户提示词中的占位符
         userPrompt = userPrompt.replace("{{grade}}", user.getGrade());
         userPrompt = userPrompt.replace("{{major}}", user.getMajor());
@@ -147,6 +156,8 @@ public class TaskHelper {
             task.setTaskPoints(points);
             task.setTaskStatus(TaskStatusEnum.PENDING.getCode());
             task.setImageUrl("");
+            task.setCreateTime(new Date());
+            task.setUpdateTime(new Date());
             taskService.insertTask(task);
         });
     }
