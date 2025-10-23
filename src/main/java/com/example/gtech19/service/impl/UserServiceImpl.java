@@ -4,6 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import com.example.gtech19.mapper.UserMapper;
 import com.example.gtech19.model.User;
 import com.example.gtech19.service.UserService;
+import com.example.gtech19.service.helper.TaskHelper;
 import com.example.gtech19.service.impl.dto.request.LoginRequest;
 import com.example.gtech19.service.impl.dto.request.UserUpdateRequest;
 import com.example.gtech19.service.impl.dto.response.UserResponse;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * 用户服务实现类
@@ -22,6 +24,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private UserMapper userMapper;
+
+    @Autowired
+    private TaskHelper taskHelper;
 
     @Override
     public UserResponse insertOrUpdate(LoginRequest request) {
@@ -42,6 +47,8 @@ public class UserServiceImpl implements UserService {
             user.setUpdateTime(new Date());
             // 新增用户
             userMapper.insert(user);
+            //异步调用
+            CompletableFuture.runAsync(() -> taskHelper.firstInitTask(userId));
         } else {
             // 更新用户
             if (StrUtil.isBlank(user.getUserid())) {

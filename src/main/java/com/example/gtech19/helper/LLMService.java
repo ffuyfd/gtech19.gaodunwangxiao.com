@@ -174,9 +174,9 @@ public class LLMService {
         Map<String, Object> params = new HashMap<>();
         params.put("model", request.getOrDefault("model", "ep-20251015101857-wc8xz")); // 使用用户提供的模型ID作为默认值
         params.put("messages", request.get("messages"));
-        params.put("temperature", request.getOrDefault("temperature", 0.7));
+       /* params.put("temperature", request.getOrDefault("temperature", 0.7));
         params.put("top_p", request.getOrDefault("top_p", 0.95));
-        params.put("max_tokens", request.getOrDefault("max_tokens", 2048));
+        params.put("max_tokens", request.getOrDefault("max_tokens", 2048));*/
         params.put("stream", isStream);
         return params;
     }
