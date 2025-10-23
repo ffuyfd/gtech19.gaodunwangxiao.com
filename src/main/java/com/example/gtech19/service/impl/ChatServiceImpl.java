@@ -64,16 +64,17 @@ public class ChatServiceImpl implements ChatService {
             }
             
             String userContent = (String) request.get("content");
-            String systemContent = "你是一个有帮助的AI助手";
+            String systemContent = (String) request.get("system");
             
             // 构建请求参数
             Map<String, Object> llmRequest = new HashMap<>(request);
             llmRequest.put("messages", buildMessages(userContent, systemContent));
             
             // 调用底层服务
+            long now = System.currentTimeMillis();
             Map<String, Object> response = llmService.generateText(llmRequest);
-            
-            log.info("通用对话请求完成，响应结果: {}", response);
+            long end = System.currentTimeMillis();
+            log.info("通用对话请求完成，响应结果: {}, 请求耗时: {}ms", response, end - now);
             return Result.success(response);
         } catch (Exception e) {
             log.error("通用对话失败", e);

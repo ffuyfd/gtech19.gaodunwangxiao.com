@@ -15,19 +15,25 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public enum TaskTypeEnum {
 
-    LIVE(1, "直播", "直播任务类型") {
+    LIVE(1, "直播", "直播任务类型", 10) {
         @Override
         public boolean needImageDisplay() {
             return true;
         }
     },
-    COURSE(2, "课程", "课程任务类型") {
+    COURSE(2, "课程", "课程任务类型", 10) {
         @Override
         public boolean needImageDisplay() {
             return true;
         }
     },
-    OTHER(3, "其它", "其它任务类型") {
+    OTHER(3, "其他", "其它任务类型", 2) {
+        @Override
+        public boolean needImageDisplay() {
+            return false;
+        }
+    },
+    TOOLS(4, "求职工具", "工具任务类型", 10) {
         @Override
         public boolean needImageDisplay() {
             return false;
@@ -37,6 +43,7 @@ public enum TaskTypeEnum {
     private final Integer code;
     private final String name;
     private final String description;
+    private final Integer points;
 
     // 缓存code到枚举的映射，提高查找效率
     private static final Map<Integer, TaskTypeEnum> CODE_TO_ENUM = 
@@ -49,6 +56,26 @@ public enum TaskTypeEnum {
      */
     public static TaskTypeEnum getByCode(Integer code) {
         return CODE_TO_ENUM.get(code);
+    }
+
+    /**
+     * 通过名称查询枚举
+     * @param name
+     * @return
+     */
+    public static TaskTypeEnum getByName(String name) {
+        return Arrays.stream(values())
+                .filter(e -> e.getName().equals(name))
+                .findFirst()
+                .orElse(null);
+    }
+
+    public static Integer getCodeByName(String name) {
+        return Arrays.stream(values())
+                .filter(e -> e.getName().equals(name))
+                .findFirst()
+                .map(TaskTypeEnum::getCode)
+                .orElse(null);
     }
 
     /**

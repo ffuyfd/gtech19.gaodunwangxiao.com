@@ -1,7 +1,8 @@
 package com.example.gtech19.service.impl;
 
 import cn.hutool.core.date.DateUtil;
-import com.example.gtech19.common.PageResponse;
+import cn.hutool.core.util.StrUtil;
+import com.example.gtech19.config.enums.TaskLibraryConfigEnum;
 import com.example.gtech19.config.enums.TaskSourceEnum;
 import com.example.gtech19.config.enums.TaskStatusEnum;
 import com.example.gtech19.config.enums.TaskTypeEnum;
@@ -13,8 +14,6 @@ import com.example.gtech19.service.impl.dto.request.TaskUpdateRequest;
 import com.example.gtech19.service.impl.dto.request.TaskUserCompleteRequest;
 import com.example.gtech19.service.impl.dto.request.TaskUserCreateRequest;
 import com.example.gtech19.service.impl.dto.response.TaskResponse;
-import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -51,6 +50,7 @@ public class TaskServiceImpl implements TaskService {
         task.setUpdateTime(new Date());
         task.setTaskDate(DateUtil.parse(request.getTaskDate()));
         task.setIsDeleted(0);
+        task.setTaskPoints(TaskTypeEnum.OTHER.getPoints());
         // 新增任务
         taskMapper.insert(task);
         return task.getId();
@@ -148,6 +148,20 @@ public class TaskServiceImpl implements TaskService {
         response.setTaskTypeName(TaskTypeEnum.getByCode(response.getTaskType()).getName());
         response.setTaskStatusName(TaskStatusEnum.getByCode(response.getTaskStatus()).getName());
         response.setTaskDate(DateUtil.formatDate(task.getTaskDate()));
+        if (StrUtil.isNotBlank(task.getTaskCode())) {
+            TaskLibraryConfigEnum taskLibraryConfigEnum = TaskLibraryConfigEnum.getByTaskId(Integer.parseInt(task.getTaskCode()));
+            if (taskLibraryConfigEnum != null  ) {
+                if ("AI".equals(taskLibraryConfigEnum.getTaskType())) {
+                    response.setImageUrl(taskLibraryConfigEnum.getJumpUrl());
+                }
+                response.setJumpType(taskLibraryConfigEnum.getTaskType());
+            }
+        }
         return response;
+    }
+
+    @Override
+    public int insertTask(Task task) {
+        return taskMapper.insert(task);
     }
 }

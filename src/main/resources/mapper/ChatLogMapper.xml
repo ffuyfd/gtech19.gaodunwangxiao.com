@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.gtech19.mapper.ChatLogMapper">
+    
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.example.gtech19.model.ChatLog">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="biz_type" property="bizType"/>
+        <result column="chat_request" property="chatRequest"/>
+        <result column="chat_response" property="chatResponse"/>
+        <result column="cost_ms" property="costMs"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="is_deleted" property="isDeleted"/>
+    </resultMap>
+    
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, user_id, biz_type, chat_request, chat_response, cost_ms, 
+        create_time, update_time, is_deleted
+    </sql>
+
+    <!-- 新增日志 -->
+    <insert id="insert" parameterType="com.example.gtech19.model.ChatLog">
+        INSERT INTO chat_log (
+            user_id, biz_type, chat_request, chat_response, cost_ms,
+            create_time, update_time, is_deleted
+        ) VALUES (
+            #{userId}, #{bizType}, #{chatRequest}, #{chatResponse}, #{costMs},
+            NOW(), NOW(), 0
+        )
+        <selectKey resultType="java.lang.Long" keyProperty="id" order="AFTER">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+    </insert>
+    
+    <!-- 更新日志 -->
+    <update id="update" parameterType="com.example.gtech19.model.ChatLog">
+        UPDATE chat_log
+        <set>
+            <if test="userId != null">user_id = #{userId},</if>
+            <if test="bizType != null">biz_type = #{bizType},</if>
+            <if test="chatRequest != null">chat_request = #{chatRequest},</if>
+            <if test="chatResponse != null">chat_response = #{chatResponse},</if>
+            <if test="costMs != null">cost_ms = #{costMs},</if>
+            <if test="isDeleted != null">is_deleted = #{isDeleted},</if>
+            update_time = NOW()
+        </set>
+        WHERE id = #{id}
+    </update>
+    
+    <!-- 根据ID删除日志（逻辑删除） -->
+    <delete id="deleteById">
+        UPDATE chat_log SET is_deleted = 1, update_time = NOW() WHERE id = #{id}
+    </delete>
+
+</mapper>

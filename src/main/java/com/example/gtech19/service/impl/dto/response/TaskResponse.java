@@ -88,4 +88,8 @@ public class TaskResponse {
      * 更新时间（自动更新）
      */
     private Date updateTime;
+
+    private String jumpType;
+
+
 }

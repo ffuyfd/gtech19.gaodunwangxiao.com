@@ -45,6 +45,10 @@ public class LLMConfig {
                     // 配置解码器以支持文本流式传输
                     configurer.defaultCodecs().maxInMemorySize(256 * 1024 * 1024);
                 })
+                .clientConnector(new reactor.netty.http.client.HttpClient()
+                        .responseTimeout(java.time.Duration.ofSeconds(600)) // 响应超时
+                        .option(io.netty.channel.ChannelOption.CONNECT_TIMEOUT_MILLIS, 30000) // 连接超时30秒
+                )
                 .build();
     }
 }

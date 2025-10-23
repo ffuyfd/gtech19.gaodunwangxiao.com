@@ -37,3 +37,8 @@ server:
 # 启用Swagger文档
 swagger:
   enabled: true
+
+chat:
+  init-task:
+    system: init_task_system_prompt.txt
+    user: init_task_user_prompt.txt

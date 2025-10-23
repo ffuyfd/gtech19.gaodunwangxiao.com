@@ -1,0 +1,6 @@
+用户信息
+年级：{{grade}}
+专业：{{major}}
+毕业意向：{{target}}
+当前日期：{{currentDay}}
+指定年月日：{{targetDay}}

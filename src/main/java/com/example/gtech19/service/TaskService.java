@@ -79,4 +79,11 @@ public interface TaskService {
      * @return 更新后的任务响应数据
      */
     TaskResponse completeTask(TaskUserCompleteRequest request);
+
+    /**
+     * 插入任务
+     * @param task
+     * @return
+     */
+    int insertTask(Task task);
 }
