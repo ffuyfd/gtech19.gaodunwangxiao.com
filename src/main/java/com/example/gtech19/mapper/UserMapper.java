@@ -41,4 +41,6 @@ public interface UserMapper {
      * 根据用户名查询用户
      */
     User selectByUsername(@Param("username") String username);
+
+    int updatePoints(@Param("points") Integer points, @Param("userId") String userId);
 }

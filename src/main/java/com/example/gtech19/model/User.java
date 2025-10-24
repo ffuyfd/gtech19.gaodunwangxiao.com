@@ -57,6 +57,11 @@ public class User implements Serializable {
      * 目标
      */
     private String target;
+
+    /**
+     * 积分
+     */
+    private Integer points;
     
     /**
      * 创建时间

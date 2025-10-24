@@ -43,6 +43,7 @@ public class UserServiceImpl implements UserService {
             user.setGrade("");
             user.setMajor("");
             user.setTarget("");
+            user.setPoints(0);
             user.setCreateTime(new Date());
             user.setUpdateTime(new Date());
             // 新增用户
@@ -95,12 +96,18 @@ public class UserServiceImpl implements UserService {
         response.setGrade(user.getGrade());
         response.setMajor(user.getMajor());
         response.setTarget(user.getTarget());
+        response.setPoints(user.getPoints());
         return response;
     }
 
     @Override
     public List<User> getAllUsers() {
         return userMapper.selectAll();
+    }
+
+    @Override
+    public void updatePoints(Integer points, String userId) {
+        userMapper.updatePoints(points, userId);
     }
 
 }

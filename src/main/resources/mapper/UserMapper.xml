@@ -13,13 +13,14 @@
         <result column="grade" property="grade"/>
         <result column="major" property="major"/>
         <result column="target" property="target"/>
+        <result column="points" property="points"/>
         <result column="create_time" property="createTime"/>
         <result column="update_time" property="updateTime"/>
     </resultMap>
     
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, userid, username, password, nickname, school, grade, major, target, create_time, update_time
+        id, userid, username, password, nickname, school, grade, major, target, points, create_time, update_time
     </sql>
     
     <!-- 根据ID查询用户 -->
@@ -40,9 +41,9 @@
     <!-- 新增用户 -->
     <insert id="insert" parameterType="com.example.gtech19.model.User">
         INSERT INTO user (
-            userid, username, password, nickname, school, grade, major, target, create_time, update_time
+            userid, username, password, nickname, school, grade, major, target, points, create_time, update_time
         ) VALUES (
-            #{userid}, #{username}, #{password}, #{nickname}, #{school}, #{grade}, #{major}, #{target}, #{createTime}, #{updateTime}
+            #{userid}, #{username}, #{password}, #{nickname}, #{school}, #{grade}, #{major}, #{target}, #{points}, #{createTime}, #{updateTime}
         )
         <selectKey resultType="java.lang.Long" keyProperty="id" order="AFTER">
             SELECT LAST_INSERT_ID()
@@ -78,4 +79,13 @@
         FROM user
         WHERE username = #{username}
     </select>
+
+    <!-- 更新用户积分 -->
+    <update id="updatePoints">
+        UPDATE user
+        SET points = points + #{points}
+        WHERE userid = #{userId}
+    </update>
+
+
 </mapper>

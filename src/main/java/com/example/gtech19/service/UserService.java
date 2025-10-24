@@ -40,5 +40,10 @@ public interface UserService {
      */
     List<User> getAllUsers();
 
+     /**
+     * 更新用户积分
+     */
+    void updatePoints(Integer points, String userId);
+
 
 }

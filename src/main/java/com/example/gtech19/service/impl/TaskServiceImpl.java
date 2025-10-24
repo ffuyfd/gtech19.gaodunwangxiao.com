@@ -143,6 +143,8 @@ public class TaskServiceImpl implements TaskService {
         task.setFinishTime(new Date());
         task.setUpdateTime(new Date());
         taskMapper.update(task);
+
+        userMapper.updatePoints(task.getTaskPoints(), request.getUserId());
         return getTaskById(request.getTaskId());
     }
 

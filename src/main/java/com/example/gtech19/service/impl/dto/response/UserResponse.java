@@ -11,4 +11,5 @@ public class UserResponse {
     private String grade;
     private String major;
     private String target;
+    private Integer points;
 }
