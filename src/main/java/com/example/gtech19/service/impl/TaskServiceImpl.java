@@ -81,6 +81,12 @@ public class TaskServiceImpl implements TaskService {
     @Value("${chat.task-report.user}")
     private String taskReportUserPrompt;
 
+    @Value("${chat.task-chat.system}")
+    private String taskChatSystemPrompt;
+
+    @Value("${chat.task-chat.user}")
+    private String taskChatUserPrompt;
+
     @Override
     public Long userCreateTask(TaskUserCreateRequest request) {
 
@@ -474,6 +480,138 @@ public class TaskServiceImpl implements TaskService {
                         
                         String jsonStr = chunk;
                         log.info("原始chunk: [{}]", chunk);
+                        if (chunk.startsWith("data: ")) {
+                            jsonStr = chunk.substring(6).trim();
+                        }
+                        
+                        // 过滤掉特殊标记（如"[DONE]"）和空字符串
+                        if ("[DONE]".equals(jsonStr) || StrUtil.isBlank(jsonStr)) {
+                            return "";
+                        }
+
+                        Map<String, Object> chunkMap = gson.fromJson(jsonStr, Map.class);
+                        String content = chatResponseParseHelper.extractResultContent(chunkMap);
+                        return StrUtil.isNotEmpty(content) ? content : "";
+                    } catch (Exception e) {
+                        log.warn("解析返回chunk失败: {}", chunk, e);
+                        return "";
+                    }
+                })
+                .filter(StrUtil::isNotEmpty);
+    }
+
+    @Override
+    public Flux<String> chatSse(String userId, String userInput) {
+        // 1. 查询用户信息
+        User user = userMapper.selectByUserId(userId);
+        if (user == null) {
+            return Flux.error(new IllegalArgumentException("用户不存在"));
+        }
+
+        // 2. 查询昨天的任务数据
+        Date yesterday = DateUtil.yesterday();
+        List<Task> yesterdayTasks = taskMapper.selectByUserIdAndDate(userId, yesterday);
+        
+        // 3. 拼装{{yesterday-task}}参数
+        String yesterdayTaskStr;
+        if (CollectionUtil.isEmpty(yesterdayTasks)) {
+            yesterdayTaskStr = "无任务";
+        } else {
+            StringBuilder sb = new StringBuilder();
+            for (Task task : yesterdayTasks) {
+                sb.append("任务名称：").append(task.getTaskName()).append("；");
+                sb.append("任务状态：");
+                if (TaskStatusEnum.COMPLETED.getCode().equals(task.getTaskStatus())) {
+                    sb.append("已完成");
+                } else {
+                    sb.append("待完成");
+                }
+                sb.append("；\n");
+            }
+            yesterdayTaskStr = sb.toString();
+        }
+
+        // 4. 读取提示词模板
+        String systemPrompt;
+        String userPrompt;
+        try {
+            systemPrompt = fileReader.readStaticFile(taskChatSystemPrompt);
+            userPrompt = fileReader.readStaticFile(taskChatUserPrompt);
+        } catch (Exception e) {
+            log.error("读取提示词模板失败", e);
+            return Flux.error(new RuntimeException("读取提示词模板失败"));
+        }
+
+        // 5. 替换用户提示词中的占位符
+        userPrompt = userPrompt.replace("{{grade}}", user.getGrade() != null ? user.getGrade() : "")
+                .replace("{{major}}", user.getMajor() != null ? user.getMajor() : "")
+                .replace("{{yesterday-task}}", yesterdayTaskStr)
+                .replace("{{user-input}}", userInput);
+
+        // 6. 构建请求参数
+        Map<String, Object> request = new HashMap<>();
+        request.put("system", systemPrompt);
+        request.put("content", userPrompt);
+
+        // 7. 调用流式模型
+        long startTime = System.currentTimeMillis();
+        Flux<String> aiResponseFlux = chatService.generalChatStream(request);
+
+        // 8. 处理流式响应：累积完整内容并保存到chat_log
+        AtomicReference<StringBuilder> fullContentRef = new AtomicReference<>(new StringBuilder());
+
+        return aiResponseFlux
+                .doOnNext(chunk -> {
+                    // 解析每个chunk，提取content并累积
+                    try {
+                        // 过滤掉包含"event:"的SSE事件消息
+                        if (chunk.contains("event:")) {
+                            return;
+                        }
+                        
+                        // SSE格式的chunk以"data: "开头，需要先移除前缀
+                        String jsonStr = chunk;
+                        if (chunk.startsWith("data: ")) {
+                            jsonStr = chunk.substring(6).trim();
+                        }
+                        
+                        // 过滤掉特殊标记（如"[DONE]"）和空字符串
+                        if ("[DONE]".equals(jsonStr) || StrUtil.isBlank(jsonStr)) {
+                            return;
+                        }
+
+                        Map<String, Object> chunkMap = gson.fromJson(jsonStr, Map.class);
+                        String content = chatResponseParseHelper.extractResultContent(chunkMap);
+                        if (StrUtil.isNotEmpty(content)) {
+                            fullContentRef.get().append(content);
+                        }
+                    } catch (Exception e) {
+                        log.warn("解析chunk失败: {}", chunk, e);
+                    }
+                })
+                .doOnComplete(() -> {
+                    // 流式响应完成后，保存到chat_log
+                    String fullContent = fullContentRef.get().toString();
+                    long endTime = System.currentTimeMillis();
+                    long costMs = endTime - startTime;
+                    if (StrUtil.isNotEmpty(fullContent)) {
+                        try {
+                            taskHelper.createChatLog(userId, gson.toJson(request), fullContent, costMs, "chatSse");
+                            log.info("聊天记录已保存，userId={}", userId);
+                        } catch (Exception e) {
+                            log.error("创建聊天记录日志失败", e);
+                        }
+                    }
+                })
+                .map(chunk -> {
+                    // 返回解析后的content给前端
+                    try {
+                        // 过滤掉包含"event:"的SSE事件消息
+                        if (chunk.contains("event:")) {
+                            return "";
+                        }
+                        
+                        String jsonStr = chunk;
                         if (chunk.startsWith("data: ")) {
                             jsonStr = chunk.substring(6).trim();
                         }

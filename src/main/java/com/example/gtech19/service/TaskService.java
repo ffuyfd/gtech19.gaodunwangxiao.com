@@ -81,4 +81,14 @@ public interface TaskService {
       */
     Flux<String> createReport(String userId);
 
+    /**
+     * 聊天SSE
+     * 根据用户输入，流式输出聊天回复
+     *
+     * @param userId 用户ID
+     * @param userInput 用户输入
+     * @return 流式输出的聊天回复内容
+     */
+    Flux<String> chatSse(String userId, String userInput);
+
 }

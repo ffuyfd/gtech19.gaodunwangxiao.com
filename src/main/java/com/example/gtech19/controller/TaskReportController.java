@@ -52,4 +52,19 @@ public class TaskReportController {
         return taskService.createReport(userId);
     }
 
+    /**
+     * 创建任务AI详情
+     * 流式输出任务AI详情内容
+     */
+    @GetMapping(value = "/chat-sse", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @ApiOperation(value = "聊天SSE", notes = "根据用户输入，流式输出聊天回复")
+    public Flux<String> chatSse(
+            @ApiParam(name = "userId", value = "用户ID", required = true, example = "1")
+            @RequestParam String userId,
+            @ApiParam(name = "userInput", value = "用户输入", required = true, example = "你好")
+            @RequestParam String userInput) {
+        return taskService.chatSse(userId, userInput);
+    }
+
+
 }

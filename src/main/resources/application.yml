@@ -48,3 +48,6 @@ chat:
   task-report:
     system: task_report_system_prompt.txt
     user: task_report_user_prompt.txt
+  task-chat:
+    system: task_chat_system_prompt.txt
+    user: task_chat_user_prompt.txt
