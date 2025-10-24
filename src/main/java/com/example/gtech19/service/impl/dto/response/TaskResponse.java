@@ -45,6 +45,11 @@ public class TaskResponse {
     private String taskDate;
 
     /**
+     * 工具编码图片URL
+     */
+    private String toolCodeImageUrl;
+
+    /**
      * 图片URL（根据任务类型展示对应的图片）
      */
     private String imageUrl;

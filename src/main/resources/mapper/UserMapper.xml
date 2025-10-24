@@ -42,7 +42,7 @@
         INSERT INTO user (
             userid, username, password, nickname, school, grade, major, target, create_time, update_time
         ) VALUES (
-            #{userid}, #{username}, #{password}, #{nickname}, #{school}, #{grade}, #{major}, #{target}, NOW(), NOW()
+            #{userid}, #{username}, #{password}, #{nickname}, #{school}, #{grade}, #{major}, #{target}, #{createTime}, #{updateTime}
         )
         <selectKey resultType="java.lang.Long" keyProperty="id" order="AFTER">
             SELECT LAST_INSERT_ID()
@@ -61,7 +61,7 @@
             <if test="grade != null">grade = #{grade},</if>
             <if test="major != null">major = #{major},</if>
             <if test="target != null">target = #{target},</if>
-            update_time = NOW()
+            update_time = #{updateTime}
         </set>
         WHERE id = #{id}
     </update>

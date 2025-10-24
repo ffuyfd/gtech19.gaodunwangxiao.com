@@ -28,7 +28,7 @@
             create_time, update_time, is_deleted
         ) VALUES (
             #{userId}, #{bizType}, #{chatRequest}, #{chatResponse}, #{costMs},
-            NOW(), NOW(), 0
+            #{createTime}, #{updateTime}, 0
         )
         <selectKey resultType="java.lang.Long" keyProperty="id" order="AFTER">
             SELECT LAST_INSERT_ID()
@@ -45,14 +45,14 @@
             <if test="chatResponse != null">chat_response = #{chatResponse},</if>
             <if test="costMs != null">cost_ms = #{costMs},</if>
             <if test="isDeleted != null">is_deleted = #{isDeleted},</if>
-            update_time = NOW()
+            update_time = #{updateTime}
         </set>
         WHERE id = #{id}
     </update>
     
     <!-- 根据ID删除日志（逻辑删除） -->
     <delete id="deleteById">
-        UPDATE chat_log SET is_deleted = 1, update_time = NOW() WHERE id = #{id}
+        UPDATE chat_log SET is_deleted = 1, update_time = #{updateTime} WHERE id = #{id}
     </delete>
 
 </mapper>

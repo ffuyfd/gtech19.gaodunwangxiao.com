@@ -36,7 +36,7 @@
             create_time, update_time, is_deleted
         ) VALUES (
             #{taskId}, #{taskName}, #{taskCommand}, #{taskAiDesc},
-            NOW(), NOW(), 0
+            #{createTime}, #{updateTime}, 0
         )
         <selectKey resultType="java.lang.Long" keyProperty="id" order="AFTER">
             SELECT LAST_INSERT_ID()

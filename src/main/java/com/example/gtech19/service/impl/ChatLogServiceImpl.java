@@ -23,6 +23,14 @@ public class ChatLogServiceImpl implements ChatLogService {
         if (chatLog == null) {
             return false;
         }
+        // 设置创建时间和更新时间
+        Date now = new Date();
+        if (chatLog.getCreateTime() == null) {
+            chatLog.setCreateTime(now);
+        }
+        if (chatLog.getUpdateTime() == null) {
+            chatLog.setUpdateTime(now);
+        }
         return chatLogMapper.insert(chatLog) > 0;
     }
 

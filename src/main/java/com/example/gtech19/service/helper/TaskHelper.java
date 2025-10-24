@@ -62,8 +62,8 @@ public class TaskHelper {
     @Value("${chat.create-task-detail.user}")
     private String createTaskDetailUserPrompt;
 
-    private final String FIRST_TARGET_DAY = "当前月未来";
-    private final String SECOND_TARGET_DAY = "次月到下学期结束";
+    private final String FIRST_TARGET_DAY = "今天到本周日";
+    private final String SECOND_TARGET_DAY = "下周一到下一个学期结束";
 
     /**
      * 用户首次初始化任务

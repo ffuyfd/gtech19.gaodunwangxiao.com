@@ -96,7 +96,7 @@
             task_source, task_status, finish_time, create_time, update_time, is_deleted
         ) VALUES (
             #{userId}, #{taskCode}, #{taskName}, #{taskDesc}, #{taskType}, #{taskDate}, #{imageUrl}, #{taskPoints},
-            #{taskSource}, #{taskStatus}, #{finishTime}, NOW(), NOW(), #{isDeleted}
+            #{taskSource}, #{taskStatus}, #{finishTime}, #{createTime}, #{updateTime}, #{isDeleted}
         )
         <selectKey resultType="java.lang.Long" keyProperty="id" order="AFTER">
             SELECT LAST_INSERT_ID()

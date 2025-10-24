@@ -164,11 +164,17 @@ public class TaskServiceImpl implements TaskService {
         if (StrUtil.isNotBlank(task.getTaskCode())) {
             TaskLibraryConfigEnum taskLibraryConfigEnum = TaskLibraryConfigEnum.getByTaskId(Integer.parseInt(task.getTaskCode()));
             if (taskLibraryConfigEnum != null) {
-                if ("AI".equals(taskLibraryConfigEnum.getTaskType())) {
-                    response.setImageUrl(taskLibraryConfigEnum.getJumpUrl());
+                if ("TOOLS".equals(taskLibraryConfigEnum.getTaskType())) {
+                    response.setToolCodeImageUrl(taskLibraryConfigEnum.getJumpUrl());
                 }
                 response.setJumpType(taskLibraryConfigEnum.getTaskType());
             }
+        }
+        if (TaskTypeEnum.COURSE.getCode().equals(task.getTaskType())) {
+            response.setImageUrl("https://res.gaodunwangxiao.com/tools/2025-10-24/84684075_course1.png");
+        }
+        if (TaskTypeEnum.LIVE.getCode().equals(task.getTaskType())) {
+            response.setImageUrl("https://res.gaodunwangxiao.com/tools/2025-10-24/84716154_live5.png");
         }
         return response;
     }
