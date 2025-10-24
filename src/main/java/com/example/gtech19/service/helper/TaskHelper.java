@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Component
@@ -57,9 +58,19 @@ public class TaskHelper {
     @Value("${chat.create-task-detail.user}")
     private String createTaskDetailUserPrompt;
 
-    private final String FIRST_TARGET_DAY = "今天到本周日";
-    private final String SECOND_TARGET_DAY = "下周一到2025年12月31日";
-
+    private final String THREE_TARGET_DAY = "2025年12月1日到2025年12月31日";
+    
+    private String getFirstTargetDay() {
+        Date today = new Date();
+        Date thisSunday = DateUtil.endOfWeek(today);
+        return DateUtil.format(today, "yyyy-MM-dd") + "到" + DateUtil.format(thisSunday, "yyyy-MM-dd");
+    }
+    
+    private String getSecondTargetDay() {
+        Date today = new Date();
+        Date nextMonday = DateUtil.offsetDay(DateUtil.endOfWeek(today), 1);
+        return DateUtil.format(nextMonday, "yyyy-MM-dd") + "到2025年11月30日";
+    }
     /**
      * 用户首次初始化任务
      *
@@ -83,8 +94,10 @@ public class TaskHelper {
 
         String taskLibrary = filterTaskLibrary(user);
 
-        initTask(user, taskLibrary, FIRST_TARGET_DAY);
-        initTask(user, taskLibrary, SECOND_TARGET_DAY);
+
+        initTask(user, taskLibrary, getFirstTargetDay());
+        CompletableFuture.runAsync(() -> initTask(user, taskLibrary, getSecondTargetDay()));
+        CompletableFuture.runAsync(() -> initTask(user, taskLibrary, THREE_TARGET_DAY));
     }
 
     public void initTask(User user, String taskLibrary, String targetDay) {
