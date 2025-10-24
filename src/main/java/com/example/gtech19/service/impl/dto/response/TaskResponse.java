@@ -94,6 +94,9 @@ public class TaskResponse {
      */
     private Date updateTime;
 
+    /**
+     * 跳转类型
+     */
     private String jumpType;
 
 
