@@ -72,5 +72,5 @@ public interface TaskMapper {
      /**
      * 根据用户ID删除任务
      */
-    int deleteUserTask(@Param("userId") String userId);
+    int deleteUserTask(@Param("userId") String userId, @Param("updateTime") Date updateTime);
 }

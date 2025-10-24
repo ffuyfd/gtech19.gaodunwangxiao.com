@@ -54,13 +54,6 @@ public interface TaskService {
      */
     TaskResponse completeTask(TaskUserCompleteRequest request);
 
-    /**
-     * 重置初始化任务
-     *
-     * @param userId 用户ID
-     * @return 重置结果
-     */
-    Boolean resetInitTask(String userId);
 
     /**
      * 创建任务AI详情

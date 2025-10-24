@@ -150,11 +150,11 @@
     </select>
 
     <!-- 更新任务 -->
-    <update id="deleteUserTask" parameterType="java.lang.String">
+    <update id="deleteUserTask">
         UPDATE task
         <set>
-            is_deleted = 1
-            update_time = NOW()
+            is_deleted = 1,
+            update_time = #{updateTime}
         </set>
         WHERE user_id = #{userId} and is_deleted=0
     </update>

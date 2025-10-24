@@ -55,9 +55,6 @@ public class UserServiceImpl implements UserService {
             user.setNickname(request.getNickName());
             user.setUpdateTime(new Date());
             userMapper.update(user);
-            //异步调用
-            String userId = user.getUserid();
-            CompletableFuture.runAsync(() -> taskHelper.firstInitTask(userId));
         }
         return getByUserId(user.getUserid());
     }
@@ -74,6 +71,7 @@ public class UserServiceImpl implements UserService {
         user.setSchool(request.getSchool());
         user.setUpdateTime(new Date());
         userMapper.update(user);
+
         //异步调用
         CompletableFuture.runAsync(() -> taskHelper.firstInitTask(request.getUserId()));
         return getByUserId(request.getUserId());
