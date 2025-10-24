@@ -2,10 +2,7 @@ package com.example.gtech19.service.impl;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
-import com.example.gtech19.config.enums.TaskLibraryConfigEnum;
-import com.example.gtech19.config.enums.TaskSourceEnum;
-import com.example.gtech19.config.enums.TaskStatusEnum;
-import com.example.gtech19.config.enums.TaskTypeEnum;
+import com.example.gtech19.config.enums.*;
 import com.example.gtech19.mapper.TaskMapper;
 import com.example.gtech19.mapper.UserMapper;
 import com.example.gtech19.model.Task;
@@ -42,6 +39,8 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class TaskServiceImpl implements TaskService {
+    @Autowired
+    private UserMapper userMapper;
 
     @Autowired
     private TaskMapper taskMapper;
@@ -60,9 +59,6 @@ public class TaskServiceImpl implements TaskService {
 
     @Autowired
     private FileReader fileReader;
-
-    @Autowired
-    private UserMapper userMapper;
 
     @Autowired
     private Gson gson;
@@ -162,12 +158,12 @@ public class TaskServiceImpl implements TaskService {
         response.setTaskStatusName(TaskStatusEnum.getByCode(response.getTaskStatus()).getName());
         response.setTaskDate(DateUtil.formatDate(task.getTaskDate()));
         if (StrUtil.isNotBlank(task.getTaskCode())) {
-            TaskLibraryConfigEnum taskLibraryConfigEnum = TaskLibraryConfigEnum.getByTaskId(Integer.parseInt(task.getTaskCode()));
-            if (taskLibraryConfigEnum != null) {
-                if ("TOOLS".equals(taskLibraryConfigEnum.getTaskType())) {
-                    response.setToolCodeImageUrl(taskLibraryConfigEnum.getJumpUrl());
+            TaskLibraryEnum taskLibraryEnum = TaskLibraryEnum.getByTaskId(Integer.parseInt(task.getTaskCode()));
+            if (taskLibraryEnum != null) {
+                if ("TOOLS".equals(taskLibraryEnum.getTaskType())) {
+                    response.setToolCodeImageUrl(taskLibraryEnum.getJumpUrl());
                 }
-                response.setJumpType(taskLibraryConfigEnum.getTaskType());
+                response.setJumpType(taskLibraryEnum.getTaskType().equals("——") ? null : taskLibraryEnum.getTaskType());
             }
         }
         if (TaskTypeEnum.COURSE.getCode().equals(task.getTaskType())) {
@@ -177,15 +173,6 @@ public class TaskServiceImpl implements TaskService {
             response.setImageUrl("https://res.gaodunwangxiao.com/tools/2025-10-24/84716154_live5.png");
         }
         return response;
-    }
-
-    @Override
-    public Boolean resetInitTask(String userId) {
-        // 删除用户的初始化任务
-        int deleted = taskMapper.deleteUserTask(userId);
-
-        CompletableFuture.runAsync(() -> taskHelper.firstInitTask(userId));
-        return deleted > 0;
     }
 
     @Override
@@ -222,7 +209,7 @@ public class TaskServiceImpl implements TaskService {
         }
 
         // 4. 通过taskCode查询TaskLibraryConfigEnum获取taskDesc
-        TaskLibraryConfigEnum taskConfig = TaskLibraryConfigEnum.getByTaskId(Integer.parseInt(taskCode));
+        TaskLibraryEnum taskConfig = TaskLibraryEnum.getByTaskId(Integer.parseInt(taskCode));
         if (taskConfig == null) {
             return Flux.error(new IllegalArgumentException("任务配置不存在"));
         }
@@ -294,7 +281,7 @@ public class TaskServiceImpl implements TaskService {
                         log.info("任务AI详情已保存，taskId={}", taskId);
                     }
                     try {
-                        taskHelper.createChatLog(task.getUserId(), gson.toJson(request), fullContent, costMs);
+                        taskHelper.createChatLog(task.getUserId(), gson.toJson(request), fullContent, costMs, "createTaskDetail");
                     } catch (Exception e) {
                         log.error("创建聊天记录日志失败", e);
                     }

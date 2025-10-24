@@ -4,10 +4,8 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
 import com.example.gtech19.common.Result;
-import com.example.gtech19.config.enums.TaskLibraryConfigEnum;
-import com.example.gtech19.config.enums.TaskSourceEnum;
-import com.example.gtech19.config.enums.TaskStatusEnum;
-import com.example.gtech19.config.enums.TaskTypeEnum;
+import com.example.gtech19.common.utils.ToolsUtil;
+import com.example.gtech19.config.enums.*;
 import com.example.gtech19.mapper.TaskMapper;
 import com.example.gtech19.mapper.UserMapper;
 import com.example.gtech19.model.ChatLog;
@@ -21,10 +19,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 public class TaskHelper {
@@ -63,7 +59,7 @@ public class TaskHelper {
     private String createTaskDetailUserPrompt;
 
     private final String FIRST_TARGET_DAY = "今天到本周日";
-    private final String SECOND_TARGET_DAY = "下周一到下一个学期结束";
+    private final String SECOND_TARGET_DAY = "下周一到2025年12月31日";
 
     /**
      * 用户首次初始化任务
@@ -71,17 +67,28 @@ public class TaskHelper {
      * @param userId
      */
     public void firstInitTask(String userId) {
-        List<Task> tasks = taskMapper.selectByUserId(userId);
-        //已有任务不生成
-        if (CollectionUtil.isNotEmpty(tasks)) {
+
+        User user = userMapper.selectByUserId(userId);
+        if (user == null) {
+            return;
+        }
+        if (StrUtil.isBlank(user.getSchool()) && StrUtil.isBlank(user.getGrade()) && StrUtil.isBlank(user.getMajor()) && StrUtil.isBlank(user.getTarget())) {
             return;
         }
 
-        initTask(userId, FIRST_TARGET_DAY);
-        initTask(userId, SECOND_TARGET_DAY);
+        List<Task> tasks = taskMapper.selectByUserId(userId);
+        //已有任务先删除
+        if (CollectionUtil.isNotEmpty(tasks)) {
+            taskMapper.deleteUserTask(userId, new Date());
+        }
+
+        String taskLibrary = filterTaskLibrary(user);
+
+        initTask(user, taskLibrary, FIRST_TARGET_DAY);
+        initTask(user, taskLibrary, SECOND_TARGET_DAY);
     }
 
-    public void initTask(String userId, String targetDay) {
+    public void initTask(User user, String taskLibrary, String targetDay) {
 
         String systemPrompt = "";
         String userPrompt = "";
@@ -95,15 +102,7 @@ public class TaskHelper {
             return;
         }
 
-        User user = userMapper.selectByUserId(userId);
-
-        if (user == null) {
-            return;
-        }
-
-        if (StrUtil.isBlank(user.getSchool()) && StrUtil.isBlank(user.getGrade()) && StrUtil.isBlank(user.getMajor()) && StrUtil.isBlank(user.getTarget())) {
-            return;
-        }
+        systemPrompt = systemPrompt.replace("{{taskLibrary}}", taskLibrary);
 
         // 替换用户提示词中的占位符
         userPrompt = userPrompt.replace("{{grade}}", user.getGrade());
@@ -121,14 +120,14 @@ public class TaskHelper {
         Result<Map<String, Object>> result = chatService.generalChat(request);
         long endTime = System.currentTimeMillis();
         Long costMs = endTime - startTime;
-        createChatLog(userId, gson.toJson(request), gson.toJson(result.getResult()), costMs);
+        createChatLog(user.getUserid(), gson.toJson(request), gson.toJson(result.getResult()), costMs, "createTask");
 
         String content = chatResponseParseHelper.extractResultContent(result.getResult());
 
         List<TaskInitResponse> taskInitResponses = chatResponseParseHelper.extractTaskList(content);
         //写表
         if (CollectionUtil.isNotEmpty(taskInitResponses)) {
-            createTask(taskInitResponses, userId);
+            createTask(taskInitResponses, user.getUserid());
         }
     }
 
@@ -156,8 +155,8 @@ public class TaskHelper {
             //分数
             int points = taskTypeEnum.getPoints();
             if (TaskTypeEnum.OTHER.getName().equals(taskInitResponse.getType()) && StrUtil.isNotEmpty(task.getTaskCode())) {
-                TaskLibraryConfigEnum taskLibraryConfigEnum = TaskLibraryConfigEnum.getByTaskId(Integer.parseInt(task.getTaskCode()));
-                points = taskLibraryConfigEnum != null ? TaskTypeEnum.TOOLS.getPoints() : TaskTypeEnum.OTHER.getPoints();
+                TaskLibraryEnum taskLibraryEnum = TaskLibraryEnum.getByTaskId(Integer.parseInt(task.getTaskCode()));
+                points = taskLibraryEnum != null && "TOOLS".equals(taskLibraryEnum.getTaskType()) ? TaskTypeEnum.TOOLS.getPoints() : TaskTypeEnum.OTHER.getPoints();
             }
             task.setTaskPoints(points);
             task.setTaskStatus(TaskStatusEnum.PENDING.getCode());
@@ -168,10 +167,10 @@ public class TaskHelper {
         });
     }
 
-    public void createChatLog(String userId, String chatRequest, String chatResponse, Long costMs) {
+    public void createChatLog(String userId, String chatRequest, String chatResponse, Long costMs, String bizType) {
         ChatLog chatLog = new ChatLog();
         chatLog.setUserId(userId);
-        chatLog.setBizType("createTask");
+        chatLog.setBizType(StrUtil.isBlank(bizType) ? "createTask" : bizType);
         chatLog.setChatRequest(chatRequest);
         chatLog.setChatResponse(chatResponse);
         chatLog.setCostMs(costMs);
@@ -179,6 +178,27 @@ public class TaskHelper {
         chatLog.setCreateTime(new Date());
         chatLog.setUpdateTime(new Date());
         chatLogService.createChatLog(chatLog);
+    }
+
+    public String filterTaskLibrary(User user) {
+        List<TaskLibraryEnum> libraryEnums = Arrays.asList(TaskLibraryEnum.values());
+
+        List<TaskLibraryEnum> filteredEnums = libraryEnums.stream()
+                .filter(enumItem -> enumItem.getTarget().contains(user.getTarget()))
+                .filter(enumItem -> enumItem.getGrade().contains(user.getGrade()))
+                .collect(Collectors.toList());
+        if (CollectionUtil.isEmpty(filteredEnums)) {
+            filteredEnums = libraryEnums;
+        }
+        //公务员选调科普	1	想考公选调？了解科普，开启公职预备。	公务员	大一上	8月,9月,10月,11月,12月
+        String response = "";
+        for (TaskLibraryEnum taskLibraryEnum : filteredEnums) {
+            response += taskLibraryEnum.getTaskName() + "\t" + taskLibraryEnum.getTaskId() + "\t"
+                    + taskLibraryEnum.getTaskDesc() + "\t"
+                    + taskLibraryEnum.getGrade() + "\t" + taskLibraryEnum.getTimePoint() + "\n";
+        }
+
+        return response;
     }
 
 }
