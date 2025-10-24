@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.gtech19.mapper.ReportMapper">
+    
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.example.gtech19.model.Report">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="report_text" property="reportText"/>
+        <result column="report_day" property="reportDay"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="is_deleted" property="isDeleted"/>
+    </resultMap>
+    
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, user_id, report_text, report_day, create_time, update_time, is_deleted
+    </sql>
+    
+    <!-- 新增报告 -->
+    <insert id="insert" parameterType="com.example.gtech19.model.Report">
+        INSERT INTO report (
+            user_id,
+            report_text,
+            report_day,
+            create_time,
+            update_time,
+            is_deleted
+        ) VALUES (
+            #{userId},
+            #{reportText},
+            #{reportDay},
+            #{createTime},
+            #{updateTime},
+            0
+        )
+    </insert>
+    
+    <!-- 逻辑删除报告 -->
+    <update id="deleteById">
+        UPDATE report
+        SET is_deleted = 1,
+            update_time = #{updateTime}
+        WHERE id = #{id}
+    </update>
+    
+    <!-- 根据用户ID和日期查询报告 -->
+    <select id="selectByUserIdAndDate" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM report
+        WHERE user_id = #{userId}
+        AND DATE(report_day) = DATE(#{reportDate})
+        AND is_deleted = 0
+        LIMIT 1
+    </select>
+    
+</mapper>

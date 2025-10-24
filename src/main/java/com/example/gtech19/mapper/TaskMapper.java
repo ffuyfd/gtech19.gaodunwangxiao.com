@@ -18,6 +18,11 @@ public interface TaskMapper {
      * 根据ID查询任务
      */
     Task selectById(Long id);
+
+     /**
+     * 根据用户ID查询今日任务
+     */
+    List<Task> selectNotTodayByUserId(@Param("userId") String userId, @Param("targetDate") String targetDate);
     
     /**
      * 根据任务编码查询任务
@@ -43,6 +48,11 @@ public interface TaskMapper {
      * 根据任务类型查询任务
      */
     List<Task> selectByTaskType(@Param("taskType") Integer taskType);
+    
+    /**
+     * 根据用户ID和任务日期查询任务
+     */
+    List<Task> selectByUserIdAndDate(@Param("userId") String userId, @Param("taskDate") Date taskDate);
     
     /**
      * 根据任务状态查询任务

@@ -41,9 +41,10 @@ public class ChatResponseParseHelper {
                 return "";
             }
 
-            // 4. 提取 content 字符串（第三层嵌套）
+            // 4. 提取 content 字符串(第三层嵌套)
             String content = (String) messageOrDelta.get("content");
-            if (content == null || content.trim().isEmpty()) {
+            // 注意:不能使用trim()判断,因为纯换行符也是有效内容
+            if (content == null) {
                 return "";
             }
 

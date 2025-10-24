@@ -33,6 +33,16 @@
         FROM task
         WHERE id = #{id}
     </select>
+
+    <!-- 根据ID查询任务 -->
+    <select id="selectNotTodayByUserId" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM task
+        WHERE user_id = #{userId}
+        and DATE(create_time) != #{targetDate}
+        and is_deleted = 0
+    </select>
     
     <!-- 根据任务编码查询任务 -->
     <select id="selectByTaskCode" resultMap="BaseResultMap">
@@ -71,6 +81,16 @@
         <include refid="Base_Column_List"/>
         FROM task
         WHERE task_type = #{taskType}
+    </select>
+    
+    <!-- 根据用户ID和任务日期查询任务 -->
+    <select id="selectByUserIdAndDate" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM task
+        WHERE user_id = #{userId}
+        AND DATE(task_date) = DATE(#{taskDate})
+        AND is_deleted = 0
     </select>
     
     <!-- 根据任务状态查询任务 -->

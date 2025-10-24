@@ -53,6 +53,14 @@ public interface TaskService {
      * @return 更新后的任务响应数据
      */
     TaskResponse completeTask(TaskUserCompleteRequest request);
+    /**
+     * 是否展示报告
+     *
+     * @param request
+     * @return 更新后的任务响应数据
+     */
+    boolean isShowReport(String userId);
+
 
 
     /**
@@ -63,5 +71,14 @@ public interface TaskService {
      * @return 流式输出的任务AI详情内容
      */
     Flux<String> createTaskAiDetail(Long taskId);
+
+     /**
+      * 创建任务报告
+      * 根据任务ID生成或获取任务报告，流式输出
+      *
+      * @param userId 用户id
+      * @return 流式输出的任务报告内容
+      */
+    Flux<String> createReport(String userId);
 
 }

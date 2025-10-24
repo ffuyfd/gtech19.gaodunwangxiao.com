@@ -1,14 +1,17 @@
 package com.example.gtech19.service.impl;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
 import com.example.gtech19.config.enums.*;
 import com.example.gtech19.mapper.TaskMapper;
 import com.example.gtech19.mapper.UserMapper;
+import com.example.gtech19.model.Report;
 import com.example.gtech19.model.Task;
 import com.example.gtech19.model.TaskAiDesc;
 import com.example.gtech19.model.User;
 import com.example.gtech19.service.ChatService;
+import com.example.gtech19.service.ReportService;
 import com.example.gtech19.service.TaskAiDescService;
 import com.example.gtech19.service.TaskService;
 import com.example.gtech19.service.helper.ChatResponseParseHelper;
@@ -68,6 +71,15 @@ public class TaskServiceImpl implements TaskService {
 
     @Value("${chat.create-task-detail.user}")
     private String createTaskDetailUserPrompt;
+
+    @Autowired
+    private ReportService reportService;
+
+    @Value("${chat.task-report.system}")
+    private String taskReportSystemPrompt;
+
+    @Value("${chat.task-report.user}")
+    private String taskReportUserPrompt;
 
     @Override
     public Long userCreateTask(TaskUserCreateRequest request) {
@@ -148,6 +160,11 @@ public class TaskServiceImpl implements TaskService {
         return getTaskById(request.getTaskId());
     }
 
+    @Override
+    public boolean isShowReport(String userId) {
+        List<Task> taskList = taskMapper.selectNotTodayByUserId(userId, DateUtil.formatDate(new Date()));
+        return CollectionUtil.isNotEmpty(taskList);
+    }
 
     /**
      * 转换Task对象为TaskResponse对象
@@ -259,7 +276,11 @@ public class TaskServiceImpl implements TaskService {
 
                         Map<String, Object> chunkMap = gson.fromJson(jsonStr, Map.class);
                         String content = chatResponseParseHelper.extractResultContent(chunkMap);
-                        if (StrUtil.isNotBlank(content)) {
+                        if (StrUtil.isNotEmpty(content)) {
+                            // 添加日志查看实际接收的内容,特别是换行符
+                            log.debug("接收到的content: [{}], 包含换行符数量: {}", 
+                                content.replace("\n", "\\n"), 
+                                content.chars().filter(ch -> ch == '\n').count());
                             fullContentRef.get().append(content);
                         }
                     } catch (Exception e) {
@@ -271,7 +292,14 @@ public class TaskServiceImpl implements TaskService {
                     String fullContent = fullContentRef.get().toString();
                     long endTime = System.currentTimeMillis();
                     long costMs = endTime - startTime;
-                    if (StrUtil.isNotBlank(fullContent)) {
+                    
+                    // 日志输出:验证保存前的完整内容
+                    log.info("准备保存到数据库的完整内容: [{}], 总字符数: {}, 换行符数量: {}",
+                        fullContent.replace("\n", "\\n"),
+                        fullContent.length(),
+                        fullContent.chars().filter(ch -> ch == '\n').count());
+                    
+                    if (StrUtil.isNotEmpty(fullContent)) {
                         TaskAiDesc newDesc = new TaskAiDesc();
                         newDesc.setTaskId(taskId);
                         newDesc.setTaskName(task.getTaskName());
@@ -300,13 +328,170 @@ public class TaskServiceImpl implements TaskService {
 
                         Map<String, Object> chunkMap = gson.fromJson(jsonStr, Map.class);
                         String content = chatResponseParseHelper.extractResultContent(chunkMap);
-                        return StrUtil.isNotBlank(content) ? content : "";
+                        return StrUtil.isNotEmpty(content) ? content : "";
                     } catch (Exception e) {
                         log.warn("解析返回chunk失败: {}", chunk, e);
                         return "";
                     }
                 })
-                .filter(StrUtil::isNotBlank);
+                .filter(StrUtil::isNotEmpty);
+    }
+
+
+
+    @Override
+    public Flux<String> createReport(String userId) {
+        if (StrUtil.isBlank(userId)) {
+            return Flux.error(new IllegalArgumentException("用户ID不能为空"));
+        }
+
+        // 1. 查询今日报告是否已存在
+        Date today = new Date();
+        Report existingReport = reportService.getReportByUserIdAndDate(userId, today);
+        if (existingReport != null && StrUtil.isNotBlank(existingReport.getReportText())) {
+            // 如果今日报告已存在，直接返回报告内容
+            String content = existingReport.getReportText();
+            return Flux.fromArray(content.split(""))
+                    .delayElements(Duration.ofMillis(50));
+        }
+
+        // 2. 查询用户信息
+        User user = userMapper.selectByUserId(userId);
+        if (user == null) {
+            return Flux.error(new IllegalArgumentException("用户不存在"));
+        }
+
+        // 3. 查询昨天的任务数据
+        Date yesterday = DateUtil.yesterday();
+        List<Task> yesterdayTasks = taskMapper.selectByUserIdAndDate(userId, yesterday);
+        
+        // 4. 拼装{{yesterday-task}}参数
+        String yesterdayTaskStr;
+        if (CollectionUtil.isEmpty(yesterdayTasks)) {
+            yesterdayTaskStr = "无任务";
+        } else {
+            StringBuilder sb = new StringBuilder();
+            for (Task task : yesterdayTasks) {
+                sb.append("任务名称：").append(task.getTaskName()).append("；");
+                sb.append("任务状态：");
+                if (TaskStatusEnum.COMPLETED.getCode().equals(task.getTaskStatus())) {
+                    sb.append("已完成");
+                } else {
+                    sb.append("待完成");
+                }
+                sb.append("；\n");
+            }
+            yesterdayTaskStr = sb.toString();
+        }
+
+        // 5. 读取提示词模板
+        String systemPrompt;
+        String userPrompt;
+        try {
+            systemPrompt = fileReader.readStaticFile(taskReportSystemPrompt);
+            userPrompt = fileReader.readStaticFile(taskReportUserPrompt);
+        } catch (Exception e) {
+            log.error("读取提示词模板失败", e);
+            return Flux.error(new RuntimeException("读取提示词模板失败"));
+        }
+
+        // 6. 替换用户提示词中的占位符
+        userPrompt = userPrompt.replace("{{user-command}}", "生成今日任务报告")
+                .replace("{{grade}}", user.getGrade() != null ? user.getGrade() : "")
+                .replace("{{major}}", user.getMajor() != null ? user.getMajor() : "")
+                .replace("{{yesterday-task}}", yesterdayTaskStr);
+
+        // 7. 构建请求参数
+        Map<String, Object> request = new HashMap<>();
+        request.put("system", systemPrompt);
+        request.put("content", userPrompt);
+
+        // 8. 调用流式模型
+        long startTime = System.currentTimeMillis();
+        Flux<String> aiResponseFlux = chatService.generalChatStream(request);
+
+        // 9. 处理流式响应：累积完整内容并保存到数据库
+        AtomicReference<StringBuilder> fullContentRef = new AtomicReference<>(new StringBuilder());
+
+        return aiResponseFlux
+                .doOnNext(chunk -> {
+                    // 解析每个chunk，提取content
+                    try {
+                        // 过滤掉包含"event:"的SSE事件消息（通常是多行格式）
+                        if (chunk.contains("event:")) {
+                            return;
+                        }
+                        
+                        // SSE格式的chunk以"data: "开头，需要先移除前缀
+                        String jsonStr = chunk;
+                        if (chunk.startsWith("data: ")) {
+                            jsonStr = chunk.substring(6).trim();
+                        }
+                        
+                        // 过滤掉特殊标记（如"[DONE]"）和空字符串
+                        if ("[DONE]".equals(jsonStr) || StrUtil.isBlank(jsonStr)) {
+                            return;
+                        }
+
+                        Map<String, Object> chunkMap = gson.fromJson(jsonStr, Map.class);
+                        String content = chatResponseParseHelper.extractResultContent(chunkMap);
+                        if (StrUtil.isNotEmpty(content)) {
+                            fullContentRef.get().append(content);
+                        }
+                    } catch (Exception e) {
+                        log.warn("解析chunk失败: {}", chunk, e);
+                    }
+                })
+                .doOnComplete(() -> {
+                    // 流式响应完成后，保存到数据库
+                    String fullContent = fullContentRef.get().toString();
+                    long endTime = System.currentTimeMillis();
+                    long costMs = endTime - startTime;
+                    if (StrUtil.isNotEmpty(fullContent)) {
+                        Report newReport = new Report();
+                        newReport.setUserId(userId);
+                        newReport.setReportText(fullContent);
+                        newReport.setReportDay(today);
+                        newReport.setCreateTime(new Date());
+                        newReport.setUpdateTime(new Date());
+                        newReport.setIsDeleted(0);
+                        reportService.createReport(newReport);
+                        log.info("任务报告已保存，userId={}", userId);
+                    }
+                    try {
+                        taskHelper.createChatLog(userId, gson.toJson(request), fullContent, costMs, "createReport");
+                    } catch (Exception e) {
+                        log.error("创建聊天记录日志失败", e);
+                    }
+                })
+                .map(chunk -> {
+                    // 返回解析后的content给前端
+                    try {
+                        // 过滤掉包含"event:"的SSE事件消息（通常是多行格式）
+                        if (chunk.contains("event:")) {
+                            return "";
+                        }
+                        
+                        String jsonStr = chunk;
+                        log.info("原始chunk: [{}]", chunk);
+                        if (chunk.startsWith("data: ")) {
+                            jsonStr = chunk.substring(6).trim();
+                        }
+                        
+                        // 过滤掉特殊标记（如"[DONE]"）和空字符串
+                        if ("[DONE]".equals(jsonStr) || StrUtil.isBlank(jsonStr)) {
+                            return "";
+                        }
+
+                        Map<String, Object> chunkMap = gson.fromJson(jsonStr, Map.class);
+                        String content = chatResponseParseHelper.extractResultContent(chunkMap);
+                        return StrUtil.isNotEmpty(content) ? content : "";
+                    } catch (Exception e) {
+                        log.warn("解析返回chunk失败: {}", chunk, e);
+                        return "";
+                    }
+                })
+                .filter(StrUtil::isNotEmpty);
     }
 
 }
