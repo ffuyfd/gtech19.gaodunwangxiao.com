@@ -42,3 +42,6 @@ chat:
   init-task:
     system: init_task_system_prompt.txt
     user: init_task_user_prompt.txt
+  create-task-detail:
+    system: create_task_detail_system_prompt.txt
+    user: create_task_detail_user_prompt.txt

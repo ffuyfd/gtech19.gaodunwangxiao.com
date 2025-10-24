@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.gtech19.mapper.TaskAiDescMapper">
+    
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.example.gtech19.model.TaskAiDesc">
+        <id column="id" property="id"/>
+        <result column="task_id" property="taskId"/>
+        <result column="task_name" property="taskName"/>
+        <result column="task_command" property="taskCommand"/>
+        <result column="task_ai_desc" property="taskAiDesc"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="is_deleted" property="isDeleted"/>
+    </resultMap>
+    
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, task_id, task_name, task_command, task_ai_desc,
+        create_time, update_time, is_deleted
+    </sql>
+    
+    <!-- 根据任务ID查询详情 -->
+    <select id="selectByTaskId" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM task_ai_desc
+        WHERE task_id = #{taskId} AND is_deleted = 0
+        LIMIT 1
+    </select>
+    
+    <!-- 新增任务AI详情 -->
+    <insert id="insert" parameterType="com.example.gtech19.model.TaskAiDesc">
+        INSERT INTO task_ai_desc (
+            task_id, task_name, task_command, task_ai_desc,
+            create_time, update_time, is_deleted
+        ) VALUES (
+            #{taskId}, #{taskName}, #{taskCommand}, #{taskAiDesc},
+            NOW(), NOW(), 0
+        )
+        <selectKey resultType="java.lang.Long" keyProperty="id" order="AFTER">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+    </insert>
+</mapper>

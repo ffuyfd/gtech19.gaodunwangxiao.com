@@ -5,6 +5,7 @@ import com.example.gtech19.service.impl.dto.request.TaskUpdateRequest;
 import com.example.gtech19.service.impl.dto.request.TaskUserCompleteRequest;
 import com.example.gtech19.service.impl.dto.request.TaskUserCreateRequest;
 import com.example.gtech19.service.impl.dto.response.TaskResponse;
+import reactor.core.publisher.Flux;
 
 import java.util.List;
 
@@ -60,5 +61,14 @@ public interface TaskService {
      * @return 重置结果
      */
     Boolean resetInitTask(String userId);
+
+    /**
+     * 创建任务AI详情
+     * 根据任务ID生成或获取任务AI详情，流式输出
+     *
+     * @param taskId 任务ID
+     * @return 流式输出的任务AI详情内容
+     */
+    Flux<String> createTaskAiDetail(Long taskId);
 
 }

@@ -94,7 +94,7 @@ public class ChatServiceImpl implements ChatService {
             }
             
             String userContent = (String) request.get("content");
-            String systemContent = "你是一个有帮助的AI助手";
+            String systemContent = (String) request.get("system");
             
             // 构建请求参数
             Map<String, Object> llmRequest = new HashMap<>(request);

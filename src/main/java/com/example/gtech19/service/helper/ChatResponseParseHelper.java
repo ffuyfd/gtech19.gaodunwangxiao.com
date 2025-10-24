@@ -30,15 +30,19 @@ public class ChatResponseParseHelper {
                 return "";
             }
 
-            // 3. 提取第一个 choice 中的 message 字典（第二层嵌套）
+            // 3. 提取第一个 choice 中的 message 或 delta 字典（第二层嵌套）
             Map<String, Object> firstChoice = choices.get(0);
-            Map<String, Object> message = (Map<String, Object>) firstChoice.get("message");
-            if (message == null) {
+            // 优先尝试获取 delta（流式响应），如果没有则尝试 message（非流式响应）
+            Map<String, Object> messageOrDelta = (Map<String, Object>) firstChoice.get("delta");
+            if (messageOrDelta == null) {
+                messageOrDelta = (Map<String, Object>) firstChoice.get("message");
+            }
+            if (messageOrDelta == null) {
                 return "";
             }
 
-            // 4. 提取 message 中的 content 字符串（第三层嵌套）
-            String content = (String) message.get("content");
+            // 4. 提取 content 字符串（第三层嵌套）
+            String content = (String) messageOrDelta.get("content");
             if (content == null || content.trim().isEmpty()) {
                 return "";
             }

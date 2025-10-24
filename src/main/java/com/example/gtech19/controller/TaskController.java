@@ -11,9 +11,12 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 任务控制器
@@ -29,6 +32,9 @@ public class TaskController {
 
     @Autowired
     private UserHelper userHelper;
+
+    @Autowired
+    private com.example.gtech19.service.TaskAiDescService taskAiDescService;
 
     /**
      * 分页查询任务列表
@@ -120,5 +126,16 @@ public class TaskController {
         }
     }
 
+    /**
+     * 创建任务AI详情
+     * 流式输出任务AI详情内容
+     */
+    @GetMapping(value = "/create-task-ai-detail", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @ApiOperation(value = "创建任务AI详情", notes = "根据任务ID生成或获取任务AI详情，流式输出")
+    public Flux<String> createTaskAiDetail(
+            @ApiParam(name = "taskId", value = "任务ID", required = true, example = "1")
+            @RequestParam Long taskId) {
+        return taskService.createTaskAiDetail(taskId);
+    }
 
 }
