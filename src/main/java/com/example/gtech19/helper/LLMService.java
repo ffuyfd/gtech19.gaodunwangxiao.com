@@ -178,6 +178,12 @@ public class LLMService {
         params.put("top_p", request.getOrDefault("top_p", 0.95));
         params.put("max_tokens", request.getOrDefault("max_tokens", 2048));*/
         params.put("stream", isStream);
+        
+        // 添加thinking参数
+        Map<String, String> thinking = new HashMap<>();
+        thinking.put("type", "disabled");
+        params.put("thinking", thinking);
+        
         return params;
     }
 

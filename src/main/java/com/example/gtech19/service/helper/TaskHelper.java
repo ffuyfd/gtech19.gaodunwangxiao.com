@@ -168,7 +168,7 @@ public class TaskHelper {
         });
     }
 
-    private void createChatLog(String userId, String chatRequest, String chatResponse, Long costMs) {
+    public void createChatLog(String userId, String chatRequest, String chatResponse, Long costMs) {
         ChatLog chatLog = new ChatLog();
         chatLog.setUserId(userId);
         chatLog.setBizType("createTask");

@@ -246,6 +246,7 @@ public class TaskServiceImpl implements TaskService {
         request.put("content", userPrompt);
 
         // 8. 调用流式模型
+        long startTime = System.currentTimeMillis();
         Flux<String> aiResponseFlux = chatService.generalChatStream(request);
 
         // 9. 处理流式响应：累积完整内容并保存到数据库
@@ -273,6 +274,8 @@ public class TaskServiceImpl implements TaskService {
                 .doOnComplete(() -> {
                     // 流式响应完成后，保存到数据库
                     String fullContent = fullContentRef.get().toString();
+                    long endTime = System.currentTimeMillis();
+                    long costMs = endTime - startTime;
                     if (StrUtil.isNotBlank(fullContent)) {
                         TaskAiDesc newDesc = new TaskAiDesc();
                         newDesc.setTaskId(taskId);
@@ -284,6 +287,12 @@ public class TaskServiceImpl implements TaskService {
                         taskAiDescService.createTaskAiDesc(newDesc);
                         log.info("任务AI详情已保存，taskId={}", taskId);
                     }
+                    try {
+                        taskHelper.createChatLog(task.getUserId(), gson.toJson(request), fullContent, costMs);
+                    } catch (Exception e) {
+                        log.error("创建聊天记录日志失败", e);
+                    }
+
                 })
                 .map(chunk -> {
                     // 返回解析后的content给前端
