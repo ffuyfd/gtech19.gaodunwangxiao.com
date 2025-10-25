@@ -212,7 +212,8 @@ public class TaskServiceImpl implements TaskService {
             // 如果记录存在且task_ai_desc不为空，直接返回
             String content = existingDesc.getTaskAiDesc();
             // 将完整内容按字符拆分，模拟流式输出
-            return Flux.fromArray(content.split(""))
+            return Flux.fromStream(content.codePoints()
+                            .mapToObj(cp -> new String(Character.toChars(cp))))
                     .delayElements(Duration.ofMillis(50)); // 可选：添加延迟模拟打字效果
         }
 
@@ -357,7 +358,8 @@ public class TaskServiceImpl implements TaskService {
         if (existingReport != null && StrUtil.isNotBlank(existingReport.getReportText())) {
             // 如果今日报告已存在，直接返回报告内容
             String content = existingReport.getReportText();
-            return Flux.fromArray(content.split(""))
+            return Flux.fromStream(content.codePoints()
+                    .mapToObj(cp -> new String(Character.toChars(cp))))
                     .delayElements(Duration.ofMillis(50));
         }
 
