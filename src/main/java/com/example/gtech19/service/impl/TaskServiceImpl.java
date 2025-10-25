@@ -407,6 +407,7 @@ public class TaskServiceImpl implements TaskService {
         userPrompt = userPrompt.replace("{{user-command}}", "生成今日任务报告")
                 .replace("{{grade}}", user.getGrade() != null ? user.getGrade() : "")
                 .replace("{{major}}", user.getMajor() != null ? user.getMajor() : "")
+                .replace("{{target}}", user.getTarget() != null ? user.getTarget() : "")
                 .replace("{{yesterday-task}}", yesterdayTaskStr);
 
         // 7. 构建请求参数
@@ -547,6 +548,7 @@ public class TaskServiceImpl implements TaskService {
         // 5. 替换用户提示词中的占位符
         userPrompt = userPrompt.replace("{{grade}}", user.getGrade() != null ? user.getGrade() : "")
                 .replace("{{major}}", user.getMajor() != null ? user.getMajor() : "")
+                .replace("{{target}}", user.getTarget() != null ? user.getTarget() : "")
                 .replace("{{yesterday-task}}", yesterdayTaskStr)
                 .replace("{{user-input}}", userInput);
 
