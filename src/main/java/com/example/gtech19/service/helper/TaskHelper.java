@@ -14,6 +14,7 @@ import com.example.gtech19.service.ChatLogService;
 import com.example.gtech19.service.ChatService;
 import com.example.gtech19.service.impl.dto.response.TaskInitResponse;
 import com.google.gson.Gson;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -22,6 +23,7 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Component
 public class TaskHelper {
 
@@ -62,6 +64,15 @@ public class TaskHelper {
     
     private String getFirstTargetDay() {
         Date today = new Date();
+
+        // 获取今天是一周中的第几天（Hutool中：周日=1，周一=2，...，周六=7）
+        int dayOfWeek = DateUtil.dayOfWeek(today);
+
+        // 如果不是周一（周一对应2），则将today设为昨天
+        if (dayOfWeek != 2) {
+            today = DateUtil.offsetDay(today, -1);
+        }
+
         Date thisSunday = DateUtil.endOfWeek(today);
         return DateUtil.format(today, "yyyy-MM-dd") + "到" + DateUtil.format(thisSunday, "yyyy-MM-dd");
     }
@@ -137,6 +148,26 @@ public class TaskHelper {
         String content = chatResponseParseHelper.extractResultContent(result.getResult());
 
         List<TaskInitResponse> taskInitResponses = chatResponseParseHelper.extractTaskList(content);
+        
+        // 如果taskInitResponses为空,重试一次
+        if (CollectionUtil.isEmpty(taskInitResponses)) {
+            log.warn("首次生成任务列表为空,准备重试。userId: {}, targetDay: {}", user.getUserid(), targetDay);
+            
+            // 重新调用ChatService生成任务
+            startTime = System.currentTimeMillis();
+            result = chatService.generalChat(request);
+            endTime = System.currentTimeMillis();
+            costMs = endTime - startTime;
+            createChatLog(user.getUserid(), gson.toJson(request), gson.toJson(result.getResult()), costMs, "createTask-retry");
+            
+            content = chatResponseParseHelper.extractResultContent(result.getResult());
+            taskInitResponses = chatResponseParseHelper.extractTaskList(content);
+            
+            if (CollectionUtil.isEmpty(taskInitResponses)) {
+                log.error("重试后任务列表仍为空。userId: {}, targetDay: {}", user.getUserid(), targetDay);
+            }
+        }
+        
         //写表
         if (CollectionUtil.isNotEmpty(taskInitResponses)) {
             createTask(taskInitResponses, user.getUserid());
