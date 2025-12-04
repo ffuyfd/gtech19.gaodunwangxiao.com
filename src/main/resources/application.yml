@@ -3,9 +3,9 @@ spring:
     name: gtech19
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://rm-bp1950tcku9427093oo.rwlb.rds.aliyuncs.com:3306/db19?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
-    username: db19_user
-    password: N1XY96RAYA00d7imXYhy
+    url: jdbc:mysql://sha1.clusters.zeabur.com:30673/db19?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
+    username: root
+    password: mSzdb8PA2Q0uU416J79HoxchD5XB3ZKE
   mvc:
     pathmatch:
       matching-strategy: ANT_PATH_MATCHER
