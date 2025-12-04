@@ -16,8 +16,8 @@ spring:
     time-zone: GMT+8
     # 对 Java 8 时间类型（LocalDateTime、LocalDate 等）的格式化
     deserialization:
-      adjust-dates-to-context-time-zone: false  # 禁用时区自动调整
-    datetime-format: yyyy-MM-dd HH:mm:ss  # Java 8 时间类型的格式
+      adjust-dates-to-context-time-zone: false
+    datetime-format: yyyy-MM-dd HH:mm:ss
 
 # 火山引擎大模型API配置
 volcano:
