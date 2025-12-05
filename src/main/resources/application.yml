@@ -22,8 +22,8 @@ spring:
 # 火山引擎大模型API配置
 volcano:
   api:
-    token: bd747896-e89b-46f4-a5ab-0a232d086845  # Bearer Token
-    url: https://ark.cn-beijing.volces.com/api/v3/chat/completions  # 文本生成API地址
+    token: fc1ca371-a7fc-467a-b594-27e247b09dd4
+    url: https://ark.cn-beijing.volces.com/api/v3/chat/completions
 
 mybatis:
   mapper-locations: classpath:mapper/*.xml
